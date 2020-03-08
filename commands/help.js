@@ -1,18 +1,18 @@
-const main = require("./../index.js");
-
 module.exports = {
 	name: "help",
 	description: "Displays helpful information",
 	usage: "HELP [Command name]",
 	execute(message, args) {
+		const client = require("./../index.js").client;
+
 		if (!args.length) {
 			let output = "List of commands:\n```\nLITERAL (Required) [Optional]\n";
-			for (const command of main.client.commands.array()) { output += "\n" + command.usage; }
+			for (const command of client.commands.array()) { output += "\n" + command.usage; }
 			message.channel.send(output + "\n```");
 			return;
 		}
 
-		const command = main.client.commands.get(args[0].toLowerCase());
+		const command = client.commands.get(args[0].toLowerCase());
 
 		if (!command) {
 			message.channel.send("Unknown command \"" + args[0] + "\".");

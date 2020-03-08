@@ -22,7 +22,7 @@ client.on("message", (message) => {
 	const args = message.content.slice(PREFIX.length).split(/ +/);
 	const commandName = args.shift().toLowerCase();
 
-	if (commandName.matches("(~|*|`|_).*")) { return; } // Prevent markdown from registering as commands.
+	if (commandName.match("(~|\\*|`|_).*")) { return; } // Prevent markdown from registering as commands.
 	if (!client.commands.has(commandName)) {
 		message.channel.send("Unknown command \"" + commandName + "\'.")
 		return;
