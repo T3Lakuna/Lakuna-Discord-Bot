@@ -1,0 +1,28 @@
+{
+  "name": "lakuna-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T3rrabyte/Lakuna-Bot.git"
+  },
+  "author": "Travis Martin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/T3rrabyte/Lakuna-Bot/issues"
+  },
+  "homepage": "https://github.com/T3rrabyte/Lakuna-Bot#readme",
+  "dependencies": {
+    "@discordjs/opus": "^0.1.0",
+    "bufferutil": "^4.0.1",
+    "discord.js": "^12.0.2",
+    "erlpack": "github:discordapp/erlpack",
+    "sodium": "^3.0.2",
+    "utf-8-validate": "^5.0.2",
+    "zlib-sync": "^0.1.6"
+  }
+}
