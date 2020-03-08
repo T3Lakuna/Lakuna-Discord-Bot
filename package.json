@@ -1,5 +1,5 @@
 {
-  "name": "lakuna-bot",
+  "name": "lakuna",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/T3rrabyte/Lakuna-Bot.git"
+    "url": "git+https://github.com/T3rrabyte/Lakuna.git"
   },
   "author": "Travis Martin",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/T3rrabyte/Lakuna-Bot/issues"
+    "url": "https://github.com/T3rrabyte/Lakuna/issues"
   },
-  "homepage": "https://github.com/T3rrabyte/Lakuna-Bot#readme",
+  "homepage": "https://github.com/T3rrabyte/Lakuna#readme",
   "dependencies": {
     "@discordjs/opus": "^0.1.0",
     "bufferutil": "^4.0.1",
