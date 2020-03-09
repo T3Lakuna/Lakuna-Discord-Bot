@@ -27,7 +27,7 @@ module.exports = {
 				"abortion survivor", "animal", "creature", "goblin", "participation trophy",
 				"walloper", "git", "prat", "berk"
 		];
-		
+
 		let output = "";
 		if (message.mentions.members.array().length) { output += message.mentions.members.array()[0].displayName + " is a(n)"; } else { output += "You're a(n)"}
 		let i = 1;
@@ -36,6 +36,6 @@ module.exports = {
 			output += " " + adjectives[Math.floor(Math.random() * adjectives.length)];
 			i++;
 		}
-		message.channel.send(output + " " + nouns[Math.floor(Math.random() * nouns.length)] + ".");
+		return message.channel.send(output + " " + nouns[Math.floor(Math.random() * nouns.length)] + ".");
 	}
 }

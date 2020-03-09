@@ -1,10 +1,16 @@
 const fs = require("fs");
 const discord = require("discord.js");
+const dotenv = require("dotenv");
+
+dotenv.config(); // Get environment variables when running on desktop.
 
 const PREFIX = "~";
 
 // Create client.
 const client = new discord.Client();
+
+// Create queue for audio.
+const audioQueue = [];
 
 // Setup commands.
 client.commands = new discord.Collection();
@@ -24,7 +30,7 @@ client.on("message", (message) => {
 
 	if (commandName.match("(~|\\*|`|_).*")) { return; } // Prevent markdown from registering as commands.
 	if (!client.commands.has(commandName)) {
-		message.channel.send("Unknown command \"" + commandName + "\'.")
+		message.channel.send("Unknown command \"" + commandName + "\".")
 		return;
 	}
 
@@ -43,5 +49,6 @@ client.login(process.env.TOKEN);
 
 // Exports for commands to read.
 module.exports = {
-	client: client
+	client: client,
+	audioQueue: audioQueue
 }
