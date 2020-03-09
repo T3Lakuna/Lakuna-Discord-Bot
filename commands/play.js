@@ -12,7 +12,7 @@ module.exports = {
 		channel.join().then((connection) => {
 			const stream = ytdl(args[0], { filter: 'audioonly' });
 			const dispatcher = connection.play(stream);
-			dispatcher.on("end", () => { channel.leave(); });
+			dispatcher.on("end", () => { connection.disconnect(); });
 		}).catch((error) => {
 			message.channel.send("Error while attempting to play audio:\n" + error);
 			channel.leave();
