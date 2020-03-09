@@ -9,8 +9,9 @@ const PREFIX = "~";
 // Create client.
 const client = new discord.Client();
 
-// Create queue for audio.
-const audioQueue = [];
+// Create audio queue.
+global.audioQueue = [];
+client.nowPlaying = false;
 
 // Setup commands.
 client.commands = new discord.Collection();
@@ -44,9 +45,3 @@ client.on("message", (message) => {
 
 // Login.
 client.login(process.env.TOKEN);
-
-// Exports for commands to read.
-module.exports = {
-	client: client,
-	audioQueue: audioQueue
-}
