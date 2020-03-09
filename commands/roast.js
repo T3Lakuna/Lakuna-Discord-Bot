@@ -3,6 +3,8 @@ module.exports = {
 	description: "Insults a user",
 	usage: "ROAST [User]",
 	execute(message, args) {
+		const discord = require("discord.js");
+
 		const adjectives = [
 				"lecherous", "lascivious", "obscene", "unprincipled", "vile",
 				"debased", "depraved", "brain-deficient", "dimwitted", "moronic",
@@ -27,15 +29,16 @@ module.exports = {
 				"abortion survivor", "animal", "creature", "goblin", "participation trophy",
 				"walloper", "git", "prat", "berk"
 		];
-
-		let output = "";
-		if (message.mentions.members.array().length) { output += message.mentions.members.array()[0].displayName + " is a(n)"; } else { output += "You're a(n)"}
+		let insult = "";
+		if (message.mentions.members.array().length) { insult += message.mentions.members.array()[0].displayName + " is a(n)"; } else { insult += "You're a(n)"}
 		let i = 1;
 		while (Math.random() <= 1 / i) {
-			if (i > 1) { output += ","; }
-			output += " " + adjectives[Math.floor(Math.random() * adjectives.length)];
+			if (i > 1) { insult += ","; }
+			insult += " " + adjectives[Math.floor(Math.random() * adjectives.length)];
 			i++;
 		}
-		return message.channel.send(output + " " + nouns[Math.floor(Math.random() * nouns.length)] + ".");
+		insult += " " + nouns[Math.floor(Math.random() * nouns.length)] + ".";
+		
+		return message.channel.send(new discord.MessageEmbed().setColor("#a4c639").setTitle(insult));
 	}
 }

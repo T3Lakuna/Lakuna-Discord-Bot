@@ -8,13 +8,14 @@ module.exports = {
 		const ytdl = require("ytdl-core");
 		const ytpl = require("ytpl");
 		const ytsr = require("ytsr");
+		const discord = require("discord.js");
 
 		const YOUTUBE_BASE_URL = "https://www.youtube.com/";
 		const VIDEO_BASE_URL = YOUTUBE_BASE_URL + "watch?v=";
 
 		// Get channel.
 		const { channel } = message.member.voice;
-		if (!channel) { return message.channel.send("Must be in a voice channel to use this command."); }
+		if (!channel) { return message.channel.send(new discord.MessageEmbed().setColor("#20b2aa").setTitle("Must be in a voice channel to use this command.")) }
 
 		// Get bitrate.
 		let bitrate = 64;
@@ -26,31 +27,33 @@ module.exports = {
 			if (url.includes("list=")) {
 				const playlistId = (url + "&").match("list=(.*?)&")[1];
 				ytpl(playlistId, function(err, playlist) {
-					if (err) { return message.channel.send("Error getting playlist:\n" + err); }
-					output = "";
+					if (err) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Error getting playlist: " + err)); }
+					output = new discord.MessageEmbed()
+							.setColor("#a4c639")
+							.setTitle("Add to Queue (" + playlist.total_items + ")");
 					for (const video of playlist.items) {
 						addToQueue(VIDEO_BASE_URL + video.id, bitrate);
-						output += "\nAdded `" + video.title + "` to play queue.";
+						output.addField(video.title + "(" + video.duration + ")", video.author.name, true);
 					}
 					message.channel.send(output);
 					if (audioQueue.length) { play(channel, audioQueue.pop()); }
 				});
 			} else {
 				addToQueue(url, bitrate);
-				message.channel.send("Added to play queue.");
+				message.channel.send(new discord.MessageEmbed().setColor("#a4c639").setTitle("Added " + url + " to queue."));
 				if (audioQueue.length) { play(channel, audioQueue.pop()); }
 			}
 		} else {
 			ytsr(args.join(" "), function(err, searchResults) {
-				if (err) { message.channel.send("Error searching YouTube:\n" + err); }
+				if (err) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Error searching YouTube: " + err)); }
 				for (const video of searchResults.items) {
 					if (video.type != "video") { continue; }
 					addToQueue(video.link, bitrate);
-					message.channel.send("Added `" + video.title + "` to play queue.");
+					message.channel.send(new discord.MessageEmbed().setColor("#a4c639").setTitle("Added " + video.title + " to queue."));
 					if (audioQueue.length) { play(channel, audioQueue.pop()); }
 					return;
 				}
-				return message.channel.send("No search results for \"" + args.join(" ") + "\".");
+				return message.channel.send(new discord.MessageEmbed().setColor("#20b2aa").setTitle("No search results for \"" + args.join(" ") + "\"."));
 			});
 		}
 
@@ -65,7 +68,7 @@ module.exports = {
 		function play(channel, query) {
 			if (message.client.nowPlaying) { return; } // Don't stop playing if a song is already playing.
 
-			message.channel.send("Now playing: `" + query.url + "`.");
+			message.channel.send(new discord.MessageEmbed().setColor("#a4c639").setTitle("Now playing " + query.url + " at " + query.bitrate + "kbpm."));
 			channel.join().then((connection) => {
 				message.client.nowPlaying = true;
 				const stream = ytdl(query.url, {
@@ -82,7 +85,7 @@ module.exports = {
 				});
 			}).catch((error) => {
 				message.client.nowPlaying = false;
-				message.channel.send("The specified track was not found.");
+				return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle(query.url + " was not found."));
 				if (audioQueue.length) { play(channel, audioQueue.pop()); } else {channel.leave(); }
 			});
 		}

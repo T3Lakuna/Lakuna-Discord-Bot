@@ -3,19 +3,27 @@ module.exports = {
 	description: "Displays helpful information",
 	usage: "HELP [Command name]",
 	execute(message, args) {
+		const discord = require("discord.js");
+
 		if (!args.length) {
-			let output = "List of commands:\n```\nLITERAL (Required) [Optional]\n";
-			for (const command of message.client.commands.array()) { output += "\n" + command.usage; }
-			return message.channel.send(output + "\n```");
+			const output = new discord.MessageEmbed()
+					.setColor("#a4c639")
+					.setTitle("List of Commands")
+					.setDescription("Key: LITERAL (Required) [Optional]");
+			for (const command of message.client.commands.array()) { output.addField(command.name, command.usage, true); }
+			return message.channel.send(output);
 		}
 
 		const command = message.client.commands.get(args[0].toLowerCase());
+		if (!command) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Unknown command.")); }
 
-		if (!command) { return message.channel.send("Unknown command \"" + args[0] + "\"."); }
-
-		let output = "```\nName: " + command.name;
-		if (command.description) { output += "\nDescription: " + command.description; }
-		if (command.usage) { output += "\nUsage: " + command.usage; }
-		return message.channel.send(output + "\n```");
+		const output = new discord.MessageEmbed()
+					.setColor("#a4c639")
+					.setTitle("Command " + command.name)
+					.setDescription("Key: LITERAL (Required) [Optional]");
+		if (command.description) { output.addField("Description", command.description, true); }
+		if (command.usage) { output.addField("Usage", command.usage, true); }
+		if (command.numRequiredArgs) { output.addField("Required Arguments", command.numRequiredArgs, true); }
+		return message.channel.send(output);
 	}
 }

@@ -21,8 +21,6 @@ for (const file of commandFiles) {
 	client.commands.set(command.name, command);
 }
 
-client.on("ready", () => { console.log("Lakuna started at " + new Date().toISOString()); });
-
 // React to commands.
 client.on("message", (message) => {
 	if (message.author.bot) { return; }
@@ -32,13 +30,11 @@ client.on("message", (message) => {
 	const commandName = args.shift().toLowerCase();
 
 	if (!/(~|\\*|`|_).*/.test(commandName)) { return; } // Prevent markdown from registering as commands.
-	if (!client.commands.has(commandName)) { return message.channel.send("Unknown command \"" + commandName + "\"."); }
+	if (!client.commands.has(commandName)) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Unknown command \"" + commandName + "\"")); }
 
 	const command = client.commands.get(commandName);
 
-	if (command.numRequiredArgs && args.length < command.numRequiredArgs) {
-		if (command.usage) { return message.channel.send("`Usage: " + command.usage + "`."); } else { return message.channel.send("Missing required arguments."); }
-	}
+	if (command.numRequiredArgs && args.length < command.numRequiredArgs) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Usage: " + command.usage)); }
 
 	command.execute(message, args);
 });
