@@ -6,8 +6,14 @@ module.exports = {
 	execute(message, args) {
 		const discord = require("discord.js");
 
+		console.log(args[0]);
+
+		// Remove extra stuff from query.
+		let query;
+		if (args[0].startsWith("<:")) { query = args[0].substring("<:".length, args[0].length - ">".length); } else { query = args[0]; }
+
 		// Get emoji.
-		const emoji = message.client.emojis.cache.find(emoji => emoji.name == args[0]);
+		const emoji = message.client.emojis.cache.find(emoji => emoji.name == query || emoji.identifier == query || emoji.id == query);
 		if (!emoji) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting emoji.")); }
 
 		const output = new discord.MessageEmbed()

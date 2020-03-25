@@ -5,6 +5,8 @@ module.exports = {
 	execute(message, args) {
 		const discord = require("discord.js");
 
+		if (!message.guild) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.INFO_HEX).setTitle("Must be in a server to use this command.")); }
+
 		const output = new discord.MessageEmbed()
 				.setColor(message.client.SUCCESS_HEX)
 				.setTitle("Server " + message.guild.name + " #" + message.guild.id)
@@ -22,7 +24,7 @@ module.exports = {
 		if (message.guild.embedChannelID) { output.addField("Embed Channel", message.guild.embedChannelID, true); }
 		if (message.guild.emojis.cache.size) { output.addField("Emojis", message.guild.emojis.cache.size, true); }
 		if (message.guild.features.length) { output.addField("Features", message.guild.features, true); }
-		if (message.guild.icon) { output.addField("Icon", message.guild.iconURL(), true); }
+		if (message.guild.icon) { output.setThumbnail(message.guild.iconURL()); }
 		if (message.guild.large) { output.addField("Large", message.guild.large, true); }
 		if (message.guild.partnered) { output.addField("Partnered", message.guild.partnered, true); }
 		if (message.guild.premiumSubscriptionCount) { output.addField("Tier " + message.guild.premiumTier, message.guild.premiumSubscriptionCount + " boosts.", true); }

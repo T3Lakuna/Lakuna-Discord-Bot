@@ -1,16 +1,19 @@
 module.exports = {
 	name: "message",
 	description: "View information about a message",
-	usage: "MESSAGE (Channel) (Message snowflake)",
-	numRequiredArgs: 2,
+	usage: "MESSAGE (Message snowflake) [Channel]",
+	numRequiredArgs: 1,
 	execute(message, args) {
 		const discord = require("discord.js");
 
 		// Get channel.
-		const channel = message.client.channels.cache.find(channel => channel.id == args[0] || channel.name == args[0])
-		if (!channel) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting channel.")); }
+		let channel;
+		if (args.length > 1) {
+			channel = message.client.channels.cache.find(channel => channel.id == args[1] || channel.name == args[1]);
+			if (!channel) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting channel.")); }
+		} else { channel = message.channel; }
 
-		channel.messages.fetch(args[1]).then((targetMessage) => {
+		channel.messages.fetch(args[0]).then((targetMessage) => {
 			const output = new discord.MessageEmbed()
 					.setColor(message.client.SUCCESS_HEX)
 					.setTitle("Message #" + targetMessage.id)

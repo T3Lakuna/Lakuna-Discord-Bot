@@ -1,14 +1,16 @@
 module.exports = {
 	name: "channel",
 	description: "View information about a channel",
-	usage: "CHANNEL (Channel)",
-	numRequiredArgs: 1,
+	usage: "CHANNEL [Channel]",
 	execute(message, args) {
 		const discord = require("discord.js");
 
 		// Get channel.
-		const channel = message.client.channels.cache.find(channel => channel.id == args[0] || channel.name == args[0])
-		if (!channel) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting channel.")); }
+		let channel;
+		if (args.length) {
+			channel = message.client.channels.cache.find(channel => channel.id == args[0] || channel.name == args[0]);
+			if (!channel) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting channel.")); }
+		} else { channel = message.channel; }
 
 		const output = new discord.MessageEmbed()
 				.setColor(message.client.SUCCESS_HEX)

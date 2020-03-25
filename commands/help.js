@@ -10,7 +10,7 @@ module.exports = {
 					.setColor(message.client.SUCCESS_HEX)
 					.setTitle("List of Commands")
 					.setDescription("Key: LITERAL (Required) [Optional]");
-			for (const command of message.client.commands.array()) { output.addField(command.name, command.usage, true); }
+			for (const command of message.client.commands.array()) { output.addField(command.usage, command.description, true); }
 			return message.channel.send(output);
 		}
 
