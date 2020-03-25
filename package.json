@@ -22,6 +22,7 @@
     "discord.js": "^12.0.2",
     "dotenv": "^8.2.0",
     "erlpack": "github:discordapp/erlpack",
+    "minimist": "^1.2.5",
     "sodium": "^3.0.2",
     "utf-8-validate": "^5.0.2",
     "ytdl-core": "^2.0.0",

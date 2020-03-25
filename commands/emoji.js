@@ -8,10 +8,10 @@ module.exports = {
 
 		// Get emoji.
 		const emoji = message.client.emojis.cache.find(emoji => emoji.name == args[0]);
-		if (!emoji) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Error getting emoji.")); }
+		if (!emoji) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting emoji.")); }
 
 		const output = new discord.MessageEmbed()
-				.setColor("#a4c639")
+				.setColor(message.client.SUCCESS_HEX)
 				.setTitle("Emoji " + emoji.name + " #" + emoji.id)
 				.setThumbnail(emoji.url)
 				.addField("Created Date", emoji.createdAt.toISOString(), true)

@@ -6,7 +6,7 @@ module.exports = {
 		const discord = require("discord.js");
 
 		const output = new discord.MessageEmbed()
-				.setColor("#a4c639")
+				.setColor(message.client.SUCCESS_HEX)
 				.setTitle("Server " + message.guild.name + " #" + message.guild.id)
 				.addField("Created Date", message.guild.createdAt.toISOString(), true)
 				.addField("Content Filter", message.guild.explicitContentFilter, true)

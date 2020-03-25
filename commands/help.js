@@ -7,7 +7,7 @@ module.exports = {
 
 		if (!args.length) {
 			const output = new discord.MessageEmbed()
-					.setColor("#a4c639")
+					.setColor(message.client.SUCCESS_HEX)
 					.setTitle("List of Commands")
 					.setDescription("Key: LITERAL (Required) [Optional]");
 			for (const command of message.client.commands.array()) { output.addField(command.name, command.usage, true); }
@@ -18,7 +18,7 @@ module.exports = {
 		if (!command) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Unknown command.")); }
 
 		const output = new discord.MessageEmbed()
-					.setColor("#a4c639")
+					.setColor(message.client.SUCCESS_HEX)
 					.setTitle("Command " + command.name)
 					.setDescription("Key: LITERAL (Required) [Optional]");
 		if (command.description) { output.addField("Description", command.description, true); }

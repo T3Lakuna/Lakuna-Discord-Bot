@@ -9,9 +9,10 @@ const PREFIX = "~";
 // Create client.
 const client = new discord.Client();
 
-// Create audio queue.
-global.audioQueue = [];
-client.nowPlaying = false;
+// Define colors.
+client.SUCCESS_HEX = "#a4c639";
+client.INFO_HEX = "#20b2aa";
+client.WARNING_HEX = "#c80815";
 
 // Setup commands.
 client.commands = new discord.Collection();

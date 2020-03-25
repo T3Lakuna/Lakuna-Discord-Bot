@@ -8,7 +8,7 @@ module.exports = {
 
 		message.client.channels.fetch(args[0]).then((targetChannel) => {
 			const output = new discord.MessageEmbed()
-					.setColor("#a4c639")
+					.setColor(message.client.SUCCESS_HEX)
 					.setTitle("Channel #" + targetChannel.id)
 					.addField("Created Date", targetChannel.createdAt.toISOString(), true)
 					.addField("Type", targetChannel.type, true);
@@ -71,6 +71,6 @@ module.exports = {
 					break;
 			}
 			message.channel.send(output);
-		}).catch((err) => { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Error getting channel.")); });
+		}).catch((err) => { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting channel.")); });
 	}
 }

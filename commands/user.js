@@ -7,10 +7,10 @@ module.exports = {
 		const discord = require("discord.js");
 
 		const user = message.client.users.cache.get(args[0]);
-		if (!user) { return new discord.MessageEmbed().setColor("#c80815").setTitle("Error getting user."); }
+		if (!user) { return new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting user."); }
 
 		const output = new discord.MessageEmbed()
-				.setColor("#a4c639")
+				.setColor(message.client.SUCCESS_HEX)
 				.setTitle("User " + user.username + " #" + user.id)
 				.setThumbnail(user.avatarURL())
 				.addField("Created Date", user.createdAt.toISOString(), true)

@@ -6,7 +6,7 @@ module.exports = {
 		const discord = require("discord.js");
 
 		message.channel.send(new discord.MessageEmbed()
-				.setColor("#a4c639")
+				.setColor(message.client.SUCCESS_HEX)
 				.setTitle("Lakuna")
 				.setURL("https://lakuna.pw/")
 				.setAuthor("Travis Martin", "https://lakuna.pw/storage/images/T3%20circle.png", "https://github.com/T3rrabyte")

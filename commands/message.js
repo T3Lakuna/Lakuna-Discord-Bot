@@ -9,7 +9,7 @@ module.exports = {
 		message.client.channels.fetch(args[0]).then((targetChannel) => {
 			targetChannel.messages.fetch(args[1]).then((targetMessage) => {
 				const output = new discord.MessageEmbed()
-						.setColor("#a4c639")
+						.setColor(message.client.SUCCESS_HEX)
 						.setTitle("Message #" + targetMessage.id)
 						.setDescription(targetMessage.cleanContent)
 						.addField("Sent Date", targetMessage.createdAt.toISOString(), true)
@@ -20,7 +20,7 @@ module.exports = {
 				if (targetMessage.tts) { output.addField("TTS", targetMessage.tts, true); }
 				if (targetMessage.editedAt) { output.addField("Edited Date", targetMessage.editedAt.toISOString(), true); }
 				message.channel.send(output);
-			}).catch((err) => { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Error getting message.")); });
-		}).catch((err) => { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Error getting channel.")); });
+			}).catch((err) => { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting message.")); });
+		}).catch((err) => { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting channel.")); });
 	}
 }
