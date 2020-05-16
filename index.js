@@ -10,8 +10,8 @@ const PREFIX = "~";
 const client = new discord.Client();
 
 // Define colors.
-client.SUCCESS_HEX = "#a4c639";
-client.INFO_HEX = "#20b2aa";
+client.SUCCESS_HEX = "#50c878";
+client.INFO_HEX = "#5078c8";
 client.WARNING_HEX = "#c80815";
 
 // Setup commands.
@@ -22,6 +22,8 @@ for (const file of commandFiles) {
 	client.commands.set(command.name, command);
 }
 
+client.on("ready", () => client.user.setActivity("~help"));
+
 // React to commands.
 client.on("message", (message) => {
 	if (message.author.bot) { return; }
@@ -31,7 +33,7 @@ client.on("message", (message) => {
 	const commandName = args.shift().toLowerCase();
 
 	if (!/(~|\\*|`|_).*/.test(commandName)) { return; } // Prevent markdown from registering as commands.
-	if (!client.commands.has(commandName)) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Unknown command \"" + commandName + "\"")); }
+	if (!client.commands.has(commandName)) { return message.channel.send(new discord.MessageEmbed().setColor(client.INFO_HEX).setTitle("Unknown command \"" + commandName + "\"")); }
 
 	const command = client.commands.get(commandName);
 
