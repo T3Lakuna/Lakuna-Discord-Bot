@@ -32,7 +32,7 @@ client.on("message", (message) => {
 	const args = message.content.slice(PREFIX.length).split(/ +/);
 	const commandName = args.shift().toLowerCase();
 
-	if (!/(~|\\*|`|_).*/.test(commandName)) { return; } // Prevent markdown from registering as commands.
+	if (commandName.startsWith(PREFIX)) { return; } // Prevent markdown from registering as commands.
 	if (!client.commands.has(commandName)) { return message.channel.send(new discord.MessageEmbed().setColor(client.INFO_HEX).setTitle("Unknown command \"" + commandName + "\"")); }
 
 	const command = client.commands.get(commandName);
