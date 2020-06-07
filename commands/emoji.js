@@ -6,8 +6,6 @@ module.exports = {
 	execute(message, args) {
 		const discord = require("discord.js");
 
-		console.log(args[0]);
-
 		// Remove extra stuff from query.
 		let query;
 		if (args[0].startsWith("<:")) { query = args[0].substring("<:".length, args[0].length - ">".length); } else { query = args[0]; }

@@ -49,40 +49,37 @@ module.exports = {
 				.setColor(message.client.SUCCESS_HEX)
 				.setTitle("Play (" + urls.length + ")");
 		for (url of urls) {
-			audioQueue.push({url: url, bitrate: bitrate});
+			audioQueue.push({ url: url, bitrate: bitrate });
 			output.addField(url, bitrate + "kbps, position " + audioQueue.length, true);
 		}
 		message.channel.send(output);
 
-		let nowPlaying = false;
 		if (audioQueue.length) { play(channel, audioQueue.pop()); }
 
 		function play(channel, query) {
-			if (nowPlaying) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.INFO_HEX).setTitle("I'm already playing in another channel.")); }
-
 			try {
 				message.channel.send(new discord.MessageEmbed().setColor(message.client.SUCCESS_HEX).setTitle("Now playing " + query.url + " at " + query.bitrate + "kbpm."));
 				channel.join().then((connection) => {
-					if (connection.channel.members.size < 2) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.INFO_HEX).setTitle("I was left alone in a voice channel, so I'm disconnecting.")); }
-					nowPlaying = true;
-					const stream = ytdl(query.url, {
-						filter: "audioonly",
-						quality: "lowest" // Lowest ytdl quality is default Discord quality.
+					connection.on('ready', () => {
+						connection.voice.setDeaf(); // Save resources by not listening to audio input.
+
+						const stream = ytdl(query.url, { filter: "audioonly", quality: "lowest" }); // Lowest ytdl quality is default Discord quality.
+						const dispatcher = connection.play(stream, { volume: false, bitrate: query.bitrate }); // Disable volume transforms to improve performance.
+
+						dispatcher.on('error', () => message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Dispatcher error:\n" + error.name + ": " + error.message)))
+						dispatcher.on("finish", () => {
+							if (audioQueue.length) { play(channel, audioQueue.pop()); } else { connection.disconnect(); }
+						});
 					});
-					const dispatcher = connection.play(stream, {
-						volume: false, // Disable volume transforms to improve performance.
-						bitrate: query.bitrate
-					});
-					dispatcher.on("finish", () => {
-						nowPlaying = false;
-						if (audioQueue.length) { play(channel, audioQueue.pop()); } else { connection.disconnect(); }
-					});
+
+					connection.on('error', error => message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Connection error:\n" + error.name + ": " + error.message)));
+
+					connection.on('failed', error => message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Connection failed:\n" + error.name + ": " + error.message)));
 				}).catch((error) => {
-					nowPlaying = false;
-					return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle(query.url + " was not found."));
+					message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle(query.url + " was not found."));
 					if (audioQueue.length) { play(channel, audioQueue.pop()); } else {channel.leave(); }
 				});
-			} catch (e) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error while playing:\n" + e.name + ": " + e.message)); }
+			} catch (error) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error while playing:\n" + error.name + ": " + error.message)); }
 		}
 	}
 }
