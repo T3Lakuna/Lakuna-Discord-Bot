@@ -26,8 +26,8 @@ module.exports = {
 					message.channel.send(output);
 				})
 				.catch(error => message.channel.send(new discord.MessageEmbed()
-						.setColor(client.WARNING_HEX)
-						.setTitle(`Error getting message [${query}].`)
+						.setColor(message.client.WARNING_HEX)
+						.setTitle(`Error getting message [${args[0]}].`)
 				));
 	}
 }

@@ -5,10 +5,12 @@ module.exports = {
 	execute(message, args) {
 		const discord = require("discord.js");
 
+		const PERMISSIONS = '268561472';
+
 		return message.channel.send(new discord.MessageEmbed()
 					.setColor(message.client.SUCCESS_HEX)
 					.setTitle("Invite")
-					.setURL(`https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=0&scope=bot`)
+					.setURL(`https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=${PERMISSIONS}&scope=bot`)
 					.setDescription("Invite Lakuna to your server.")
 		);
 	}

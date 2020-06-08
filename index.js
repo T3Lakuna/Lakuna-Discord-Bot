@@ -66,7 +66,8 @@ client.on("messageReactionAdd", async (reaction, user) => {
 
 	// Add roles based on reactions.
 	embed.fields.forEach(field => {
-		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { user.presence.member.roles.add(client.getRole(reaction.message, field.value)); }
+		const role = client.getRole(reaction.message, field.value);
+		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { user.presence.member.roles.add(role).catch(error => console.log(`Error adding role [${role}]:\n${error}`)); }
 	});
 });
 
@@ -79,9 +80,10 @@ client.on("messageReactionRemove", async (reaction, user) => {
 	const embed = reaction.message.embeds[0];
 	if (embed.title != client.ROLE_REACTION_TITLE) { return; }
 
-	// Add roles based on reactions.
+	// Remove roles based on reactions.
 	embed.fields.forEach(field => {
-		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { user.presence.member.roles.remove(client.getRole(reaction.message, field.value)); }
+		const role = client.getRole(reaction.message, field.value);
+		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { user.presence.member.roles.remove(role).catch(error => console.log(`Error removing role [${role}]:\n${error}`)); }
 	});
 });
 
