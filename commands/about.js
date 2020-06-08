@@ -17,7 +17,7 @@ module.exports = {
 				.addField("Guilds (this shard)", message.client.guilds.cache.size, true)
 				.addField("Users (this shard)", message.client.users.cache.size, true)
 				.addField("Last Reconnect", message.client.readyAt.toISOString(), true)
-				.addField("Shard Count", message.client.shard.count, true)
+				// .addField("Shard Count", message.client.shard.count, true)
 				.addField("Uptime (ms)", message.client.uptime, true)
 				.addField("ID", message.client.user.id, true)
 		);
