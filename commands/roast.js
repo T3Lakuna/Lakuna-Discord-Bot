@@ -39,6 +39,9 @@ module.exports = {
 		}
 		insult += " " + nouns[Math.floor(Math.random() * nouns.length)] + ".";
 		
-		return message.channel.send(new discord.MessageEmbed().setColor(message.client.SUCCESS_HEX).setTitle(insult));
+		return message.channel.send(new discord.MessageEmbed()
+				.setColor(message.client.SUCCESS_HEX)
+				.setTitle(insult)
+		);
 	}
 }

@@ -8,7 +8,7 @@ module.exports = {
 		return message.channel.send(new discord.MessageEmbed()
 					.setColor(message.client.SUCCESS_HEX)
 					.setTitle("Invite")
-					.setURL("https://discordapp.com/api/oauth2/authorize?client_id=686092493787234326&permissions=0&scope=bot")
+					.setURL(`https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=305523776&scope=bot`)
 					.setDescription("Invite Lakuna to your server.")
 		);
 	}

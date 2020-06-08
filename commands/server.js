@@ -5,7 +5,12 @@ module.exports = {
 	execute(message, args) {
 		const discord = require("discord.js");
 
-		if (!message.guild) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.INFO_HEX).setTitle("Must be in a server to use this command.")); }
+		if (!message.guild) {
+			return message.channel.send(new discord.MessageEmbed()
+					.setColor(message.client.INFO_HEX)
+					.setTitle("Must be in a server to use this command.")
+			);
+		}
 
 		const output = new discord.MessageEmbed()
 				.setColor(message.client.SUCCESS_HEX)

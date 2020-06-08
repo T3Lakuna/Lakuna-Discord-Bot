@@ -15,7 +15,7 @@ module.exports = {
 		}
 
 		const command = message.client.commands.get(args[0].toLowerCase());
-		if (!command) { return message.channel.send(new discord.MessageEmbed().setColor("#c80815").setTitle("Unknown command.")); }
+		if (!command) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.INFO_HEX).setTitle("Unknown command.")); }
 
 		const output = new discord.MessageEmbed()
 					.setColor(message.client.SUCCESS_HEX)

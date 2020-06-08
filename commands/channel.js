@@ -4,13 +4,10 @@ module.exports = {
 	usage: "CHANNEL [Channel]",
 	execute(message, args) {
 		const discord = require("discord.js");
-
-		// Get channel.
+		
 		let channel;
-		if (args.length) {
-			channel = message.client.channels.cache.find(channel => channel.id == args[0] || channel.name == args[0]);
-			if (!channel) { return message.channel.send(new discord.MessageEmbed().setColor(message.client.WARNING_HEX).setTitle("Error getting channel.")); }
-		} else { channel = message.channel; }
+		if (args.length > 0) { channel = message.client.getChannel(message, args[0]); } else { channel = message.channel; }
+		if (!channel) { return; }
 
 		const output = new discord.MessageEmbed()
 				.setColor(message.client.SUCCESS_HEX)
