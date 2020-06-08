@@ -52,7 +52,7 @@ client.on("message", message => {
 
 	command.execute(message, args);
 	
-	message.delete();
+	message.delete().catch(error => { });
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {

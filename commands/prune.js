@@ -25,12 +25,12 @@ module.exports = {
 				.then(messages => message.channel.bulkDelete(messages)
 						.catch(error => message.channel.send(new discord.MessageEmbed()
 								.setColor(message.client.WARNING_HEX)
-								.setTitle(`Invalid permissions:\n${error}`)
+								.setTitle(`Error while deleting messages:\n${error}`)
 						))
 				)
 				.catch(error => message.channel.send(new discord.MessageEmbed()
 						.setColor(message.client.WARNING_HEX)
-						.setTitle(`Error while pruning messages:\n${error}`)
+						.setTitle(`Error while fetching messages:\n${error}`)
 				));
 	}
 }
