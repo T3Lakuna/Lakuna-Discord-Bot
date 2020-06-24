@@ -67,7 +67,8 @@ client.on("messageReactionAdd", async (reaction, user) => {
 	// Add roles based on reactions.
 	embed.fields.forEach(field => {
 		const role = client.getRole(reaction.message, field.value);
-		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { user.presence.member.roles.add(role).catch(error => console.log(`Error adding role [${role}]:\n${error}`)); }
+		const member = reaction.message.guild.members.cache.find(member => member.id == user.id);
+		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { member.roles.add(role).catch(error => console.log(`Error adding role [${role}] to [${member}]:\n${error}`)); }
 	});
 });
 
@@ -83,7 +84,8 @@ client.on("messageReactionRemove", async (reaction, user) => {
 	// Remove roles based on reactions.
 	embed.fields.forEach(field => {
 		const role = client.getRole(reaction.message, field.value);
-		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { user.presence.member.roles.remove(role).catch(error => console.log(`Error removing role [${role}]:\n${error}`)); }
+		const member = reaction.message.guild.members.cache.find(member => member.id == user.id);
+		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { member.roles.remove(role).catch(error => console.log(`Error removing role [${role}] from [${member}]:\n${error}`)); }
 	});
 });
 
