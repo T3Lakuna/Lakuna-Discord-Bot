@@ -108,7 +108,7 @@ client.getChannel = (message, query) => {
 
 client.getEmoji = (message, query) => {
 	if (query.startsWith("<:")) { query = query.substring("<:".length, query.length - ">".length); }
-	const emoji = client.emojis.cache.find(emoji => emoji.name == query || emoji.identifier == query || emoji.id == query);
+	const emoji = client.emojis.cache.find(emoji => emoji.name == query || emoji.identifier == query || emoji.id == query || emoji.toString() == query);
 	if (!emoji) {
 		message.channel.send(new discord.MessageEmbed()
 				.setColor(client.WARNING_HEX)
@@ -130,10 +130,13 @@ client.getRole = (message, query) => {
 	return role;
 }
 
-client.getUser = (message, query) => {
+client.getUser = (message, query) => client.getUser(message, query, true);
+
+client.getUser = (message, query, recursive) => {
 	if (query.startsWith("<@!")) { query = query.substring("<@!".length, query.length - ">".length); }
-	let user = client.users.cache.find(user => user.id == query || user.tag == query || user.username == query);
-	const member = message.guild.members.cache.find(member => member.displayName == query || member.nickname == query);
+	let user = client.users.cache.find(user => user.id == query || user.tag == query || user.username == query || user.toString() == query);
+	let member;
+	if (recursive) { member = client.getMember(message, query, false); }
 	if (member) { user = member.user; }
 	if (!user) {
 		message.channel.send(new discord.MessageEmbed()
@@ -142,4 +145,25 @@ client.getUser = (message, query) => {
 		);
 	}
 	return user;
+}
+
+// user => user.id == query || user.tag == query || user.username == query || user.toString() == query
+// member => member.displayName == query || member.id == query || member.nickname == query || member.toString() == query
+
+client.getMember = (message, query) => client.getMember(message, query, true);
+
+client.getMember = (message, query, recursive) => {
+	if (query.startsWith("<@!")) { query = query.substring("<@!".length, query.length - ">".length); }
+	if (!message.guild) { return null; }
+	let member = message.guild.members.cache.find(member => member.displayName == query || member.id == query || member.nickname == query || member.toString() == query);
+	let user;
+	if (recursive) { user = client.getUser(message, query, false); }
+	if (user) { member = message.guild.members.cache.find(member => member.id == user.id); }
+	if (!member) {
+		message.channel.send(new discord.MessageEmbed()
+				.setColor(message.client.WARNING_HEX)
+				.setTitle(`Error getting member [${query}].`)
+		);
+	}
+	return member;
 }
