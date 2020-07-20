@@ -21,7 +21,6 @@ module.exports = {
 				.addField("Discriminator", user.discriminator, true)
 				.addField("Tag", user.tag, true);
 		if (user.bot) { output.addField("Bot", user.bot, true); }
-		if (user.lastMessageID) { output.addField("Last Message", user.lastMessageID, true); }
 		if (member) {
 			if (member.bannable) { output.addField("Bannable", member.bannable, true); }
 			if (member.deleted) { output.addField("Deleted", member.deleted, true); }
@@ -31,7 +30,7 @@ module.exports = {
 			if (member.guild) { output.addField("Guild", member.guild, true); }
 			if (member.joinedAt) { output.addField("Joined Date", member.joinedAt.toISOString(), true); }
 			if (member.kickable) { output.addField("Kickable", member.kickable, true); }
-			if (member.lastMessageID) { output.addField("Last Message", member.lastMessageChannelID + " - " + member.lastMessageID, true); }
+			if (member.lastMessageID) { output.addField("Last Message", "Channel: " + member.lastMessageChannelID + "\nMessage: " + member.lastMessageID, true); }
 			if (member.manageable) { output.addField("Manageable", member.manageable, true); }
 			if (member.nickname) { output.addField("Nickname", member.nickname, true); }
 			if (member.premiumSince) { output.addField("Boost Date", member.premiumSince.toISOString(), true); }
