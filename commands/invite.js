@@ -5,7 +5,7 @@ module.exports = {
 	execute(message, args) {
 		const discord = require("discord.js");
 
-		const PERMISSIONS = '268561472';
+		const PERMISSIONS = '268561504';
 
 		return message.channel.send(new discord.MessageEmbed()
 					.setColor(message.client.SUCCESS_HEX)

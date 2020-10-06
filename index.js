@@ -23,7 +23,19 @@ for (const file of commandFiles) {
 	client.commands.set(command.name, command);
 }
 
-client.on("ready", () => client.user.setActivity("~help"));
+client.on("ready", () => {
+	console.log("Ready.");
+
+	// Cache invite links for invite link message.
+	client.guildInvites = new Map();
+	client.guilds.cache.forEach((guild) => {
+		guild.fetchInvites()
+				.then((invites) => client.guildInvites.set(guild.id, invites))
+				.catch((error) => console.log(`Error fetching invites for guild [${guild}]:\n${error}`));
+	});
+
+	client.user.setActivity("~help");
+});
 
 // React to commands.
 client.on("message", message => {
@@ -88,6 +100,32 @@ client.on("messageReactionRemove", async (reaction, user) => {
 		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { member.roles.remove(role).catch(error => console.log(`Error removing role [${role}] from [${member}]:\n${error}`)); }
 	});
 });
+
+client.on("guildMemberAdd", async (member) => {
+	try {
+		const oldInvites = client.guildInvites.get(member.guild.id);
+		const newInvites = await member.guild.fetchInvites();
+		client.guildInvites.set(member.guild.id, newInvites);
+		const usedInvite = newInvites.find((invite) => oldInvites.get(invite.code).uses < invite.uses);
+
+		member.guild.systemChannel.send(new discord.MessageEmbed()
+				.setColor(client.INFO_HEX)
+				.setTitle(`User ${member.displayName} joined the server.`)
+				.setImage(member.user.displayAvatarURL())
+				.addField("Invite Code", usedInvite.code, true)
+				.addField("Inviter", usedInvite.inviter.id, true)
+		);
+	} catch (error) {
+		member.guild.systemChannel.send(new discord.MessageEmbed()
+				.setColor(client.INFO_HEX)
+				.setTitle(`User ${member.displayName} joined the server.`)
+				.setDescription("Lacking permission to check invite link: Manage Server.")
+				.setImage(member.user.displayAvatarURL())
+		);
+	}
+});
+
+client.on('inviteCreate', async (invite) => client.guildInvites.set(invite.guild.id, await invite.guild.fetchInvites()));
 
 client.on("error", error => console.log(`Client error: ${error}`));
 
