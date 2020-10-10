@@ -7,7 +7,7 @@ module.exports = {
 
 		if (!message.guild) {
 			return message.channel.send(new discord.MessageEmbed()
-					.setColor(message.client.INFO_HEX)
+					.setColor(message.client.WARNING_HEX)
 					.setTitle("Must be in a server to use this command.")
 			);
 		}

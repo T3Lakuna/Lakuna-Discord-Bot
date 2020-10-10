@@ -31,7 +31,7 @@ client.on("ready", () => {
 	client.guilds.cache.forEach((guild) => {
 		guild.fetchInvites()
 				.then((invites) => client.guildInvites.set(guild.id, invites))
-				.catch((error) => console.log(`Error fetching invites for guild [${guild}]:\n${error}`));
+				.catch((error) => client.logError(`Error fetching invites for guild [${guild}].`, error, guild.systemChannel))
 	});
 
 	client.user.setActivity("~help");
@@ -80,7 +80,9 @@ client.on("messageReactionAdd", async (reaction, user) => {
 	embed.fields.forEach(field => {
 		const role = client.getRole(reaction.message, field.value);
 		const member = reaction.message.guild.members.cache.find(member => member.id == user.id);
-		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { member.roles.add(role).catch(error => console.log(`Error adding role [${role}] to [${member}]:\n${error}`)); }
+		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) {
+			member.roles.add(role).catch((error) => client.logError(`Error adding role [${role}] to [${member}].`, error, reaction.message.guild.systemChannel));
+		}
 	});
 });
 
@@ -97,7 +99,9 @@ client.on("messageReactionRemove", async (reaction, user) => {
 	embed.fields.forEach(field => {
 		const role = client.getRole(reaction.message, field.value);
 		const member = reaction.message.guild.members.cache.find(member => member.id == user.id);
-		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) { member.roles.remove(role).catch(error => console.log(`Error removing role [${role}] from [${member}]:\n${error}`)); }
+		if (client.getEmoji(reaction.message, field.name) == reaction.emoji) {
+			member.roles.remove(role).catch(error => client.logError(`Error removing role [${role}] from [${member}].`, error, reaction.message.guild.systemChannel));
+		}
 	});
 });
 
@@ -108,26 +112,28 @@ client.on("guildMemberAdd", async (member) => {
 		client.guildInvites.set(member.guild.id, newInvites);
 		const usedInvite = newInvites.find((invite) => oldInvites.get(invite.code).uses < invite.uses);
 
-		member.guild.systemChannel.send(new discord.MessageEmbed()
-				.setColor(client.INFO_HEX)
-				.setTitle(`User ${member.displayName} joined the server.`)
-				.setImage(member.user.displayAvatarURL())
-				.addField("Invite Code", usedInvite.code, true)
-				.addField("Inviter", usedInvite.inviter.id, true)
-		);
-	} catch (error) {
-		member.guild.systemChannel.send(new discord.MessageEmbed()
-				.setColor(client.INFO_HEX)
-				.setTitle(`User ${member.displayName} joined the server.`)
-				.setDescription("Lacking permission to check invite link: Manage Server.")
-				.setImage(member.user.displayAvatarURL())
-		);
-	}
+		if (usedInvite) {
+			member.guild.systemChannel.send(new discord.MessageEmbed()
+					.setColor(client.INFO_HEX)
+					.setTitle(`User ${member.displayName} joined the server.`)
+					.setImage(member.user.displayAvatarURL())
+					.addField("Invite Code", usedInvite.code, true)
+					.addField("Inviter", usedInvite.inviter.id, true)
+			);
+		} else {
+			member.guild.systemChannel.send(new discord.MessageEmbed()
+					.setColor(client.INFO_HEX)
+					.setTitle(`User ${member.displayName} joined the server.`)
+					.setImage(member.user.displayAvatarURL())
+					.setDescription('The member joined with an unknown invite.')
+			);
+		}
+	} catch (error) { client.logError(`Member [${member}] joined the server, but the invite information could not be found.`, error, member.guild.systemChannel); }
 });
 
 client.on('inviteCreate', async (invite) => client.guildInvites.set(invite.guild.id, await invite.guild.fetchInvites()));
 
-client.on("error", error => console.log(`Client error: ${error}`));
+client.on("error", error => client.logError('Client error', error));
 
 // Login.
 client.login(process.env.TOKEN);
@@ -135,36 +141,21 @@ client.login(process.env.TOKEN);
 // Reusable methods.
 client.getChannel = (message, query) => {
 	const channel = client.channels.cache.find(channel => channel.id == query || channel.name == query);
-	if (!channel) {
-		message.channel.send(new discord.MessageEmbed()
-				.setColor(client.WARNING_HEX)
-				.setTitle(`Error getting channel [${query}].`)
-		);
-	}
+	if (!channel) { client.logError(`Error getting channel [${query}].`, null, message.channel); }
 	return channel;
 }
 
 client.getEmoji = (message, query) => {
 	if (query.startsWith("<:")) { query = query.substring("<:".length, query.length - ">".length); }
 	const emoji = client.emojis.cache.find(emoji => emoji.name == query || emoji.identifier == query || emoji.id == query || emoji.toString() == query);
-	if (!emoji) {
-		message.channel.send(new discord.MessageEmbed()
-				.setColor(client.WARNING_HEX)
-				.setTitle(`Error getting emoji [${query}].`)
-		);
-	}
+	if (!emoji) { client.logError(`Error getting emoji [${query}].`, null, message,channel); }
 	return emoji;
 }
 
 client.getRole = (message, query) => {
 	if (query.startsWith("<@&")) { query = query.substring("<@&".length, query.length - ">".length); }
 	const role = message.guild.roles.cache.find(role => role.id == query || role.name == query || role.toString() == query);
-	if (!role) {
-		message.channel.send(new discord.MessageEmbed()
-				.setColor(client.WARNING_HEX)
-				.setTitle(`Error getting role [${query}].`)
-		);
-	}
+	if (!role) { client.logError(`Error getting role [${query}].`, null, message.channel); }
 	return role;
 }
 
@@ -176,12 +167,7 @@ client.getUser = (message, query, recursive) => {
 	let member;
 	if (recursive) { member = client.getMember(message, query, false); }
 	if (member) { user = member.user; }
-	if (!user) {
-		message.channel.send(new discord.MessageEmbed()
-				.setColor(message.client.WARNING_HEX)
-				.setTitle(`Error getting user [${query}].`)
-		);
-	}
+	if (!user) { client.logError(`Error getting user [${query}].`, null, message.channel); }
 	return user;
 }
 
@@ -197,11 +183,22 @@ client.getMember = (message, query, recursive) => {
 	let user;
 	if (recursive) { user = client.getUser(message, query, false); }
 	if (user) { member = message.guild.members.cache.find(member => member.id == user.id); }
-	if (!member) {
-		message.channel.send(new discord.MessageEmbed()
-				.setColor(message.client.WARNING_HEX)
-				.setTitle(`Error getting member [${query}].`)
+	if (!member) { client.logError(`Error getting member [${query}].`, null, message.channel); }
+	return member;
+}
+
+client.logError = (message, error, channel) => {
+	const messageString = message | '';
+	const errorString = `${error}` | '';
+	const breakString = '--------------------';
+
+	console.error(`\n${breakString}\n[${new Date().toISOString()}]\nError name: ${error.name}\nError message: ${error.message}\nMessage: ${message}\n\n${error}\n${breakString}\n`);
+
+	if (channel) {
+		channel.send(new discord.MessageEmbed()
+				.setColor(client.WARNING_HEX)
+				.setTitle('Error')
+				.setDescription(`${message}`)
 		);
 	}
-	return member;
 }

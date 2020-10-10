@@ -25,9 +25,6 @@ module.exports = {
 					if (targetMessage.editedAt) { output.addField("Edited Date", targetMessage.editedAt.toISOString(), true); }
 					message.channel.send(output);
 				})
-				.catch(error => message.channel.send(new discord.MessageEmbed()
-						.setColor(message.client.WARNING_HEX)
-						.setTitle(`Error getting message [${args[0]}].`)
-				));
+				.catch((error) => message.client.logError(`Error getting message [${args[0]}].`, error, message.channel));
 	}
 }

@@ -23,14 +23,8 @@ module.exports = {
 
 		message.channel.messages.fetch({ limit: amount })
 				.then(messages => message.channel.bulkDelete(messages)
-						.catch(error => message.channel.send(new discord.MessageEmbed()
-								.setColor(message.client.WARNING_HEX)
-								.setTitle(`Error while deleting messages:\n${error}`)
-						))
+						.catch((error) => message.client.logError('Error while deleting messages.', error, message.channel))
 				)
-				.catch(error => message.channel.send(new discord.MessageEmbed()
-						.setColor(message.client.WARNING_HEX)
-						.setTitle(`Error while fetching messages:\n${error}`)
-				));
+				.catch((error) => message.client.logError('Error while fetching messages.', error, message.channel))
 	}
 }
