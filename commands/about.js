@@ -9,7 +9,7 @@ module.exports = {
 				.setColor(message.client.SUCCESS_HEX)
 				.setTitle("Lakuna")
 				.setURL("https://lakuna.pw/")
-				.setAuthor("Travis Martin", "https://lakuna.pw/storage/images/triquetra/newc.png", "https://github.com/T3rrabyte")
+				.setAuthor("Travis Martin", "https://lakuna.pw/s/img/triquetra-circle.png", "https://github.com/T3rrabyte")
 				.setDescription("Lakuna is a lightweight Discord bot with a standard set of commands focused on being aesthetically pleasing, lightweight, and non-intrusive.")
 				.setThumbnail(message.client.user.avatarURL())
 				.addField("Channels", message.client.channels.cache.size, true)
