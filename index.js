@@ -31,7 +31,7 @@ client.on("ready", () => {
 	client.guilds.cache.forEach((guild) => {
 		guild.fetchInvites()
 				.then((invites) => client.guildInvites.set(guild.id, invites))
-				.catch((error) => client.logError(`Error fetching invites for guild [${guild}].`, error, guild.systemChannel))
+				.catch((error) => client.logError(`Error fetching invites for guild [${guild}]. Make sure that the bot has the "Manage Server" permission enabled.`, error, guild.systemChannel))
 	});
 
 	client.user.setActivity("~help");
