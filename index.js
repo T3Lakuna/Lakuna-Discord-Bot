@@ -113,13 +113,14 @@ client.on("guildMemberAdd", async (member) => {
 		const usedInvite = newInvites.find((invite) => oldInvites.get(invite.code).uses < invite.uses);
 
 		if (usedInvite) {
-			member.guild.systemChannel.send(new discord.MessageEmbed()
+			const output = new discord.MessageEmbed()
 					.setColor(client.INFO_HEX)
 					.setTitle(`User ${member.displayName} joined the server.`)
 					.setImage(member.user.displayAvatarURL())
-					.addField("Invite Code", usedInvite.code, true)
-					.addField("Inviter", usedInvite.inviter.id, true)
-			);
+					.addField("Invite Code", usedInvite.code, true);
+			if (usedInvite.inviter) { output.addField("Inviter", usedInvite.inviter.id, true); }
+
+			member.guild.systemChannel.send(output);
 		} else {
 			member.guild.systemChannel.send(new discord.MessageEmbed()
 					.setColor(client.INFO_HEX)
@@ -170,9 +171,6 @@ client.getUser = (message, query, recursive) => {
 	if (!user) { client.logError(`Error getting user [${query}].`, null, message.channel); }
 	return user;
 }
-
-// user => user.id == query || user.tag == query || user.username == query || user.toString() == query
-// member => member.displayName == query || member.id == query || member.nickname == query || member.toString() == query
 
 client.getMember = (message, query) => client.getMember(message, query, true);
 
