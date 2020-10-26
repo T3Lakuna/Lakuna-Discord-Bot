@@ -1,11 +1,12 @@
 module.exports = {
-	// Paths
+	// Paths.
 	BOT_PATH: './bot.js',
 	LIB_PATH: './libraries',
 	COMMANDS_PATH: './commands',
-	OWNER_COMMANDS_PATH: './owner_commands',
 
 	// Miscellaneous.
 	PREFIX: '!~',
-	HELP_COMMAND_NAME: 'help'
+	HELP_COMMAND_NAME: 'help',
+	MEMORY_CHANNEL_NAME: 'lakuna-memory',
+	PERMISSIONS_INTEGER: 272100466
 }

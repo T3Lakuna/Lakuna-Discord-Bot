@@ -11,7 +11,7 @@ dotenv.config();
 const shardingManager = new discord.ShardingManager(config.BOT_PATH, { token: process.env.TOKEN });
 
 // Log to console whenever a shard is created.
-shardingManager.on('shardCreate', (shard) => log.unified(log.types.INFO, null, `Shard created with ID: ${shard.id}`));
+shardingManager.on('shardCreate', (shard) => log.console(`Shard created with ID: ${shard.id}.`));
 
 // Spawn shards based on guild count.
 shardingManager.spawn();
