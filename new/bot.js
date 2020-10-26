@@ -28,7 +28,7 @@ const loadCommands = (directory) => {
 			client.commands.set(command.aliases, command);
 		}
 	});
-}
+};
 
 // Load universal commands.
 loadCommands(config.COMMANDS_PATH);
@@ -43,7 +43,7 @@ client.on('error', (error) => log.console(error));
 const cacheInvites = (guild) => {
 	guild.fetchInvites()
 			.then((invites) => client.guildInvites.set(guild.id, invites))
-			.catch((error) => log.unified(log.types.WARNING, guild, `Lakuna was unable to fetch invites for ${guild}. Please make sure that the bot has the "Manage Server" permission enabled.`, error));
+			.catch((error) => log.guild(log.types.WARNING, guild, `Lakuna was unable to fetch invites for ${guild}. Please make sure that the bot has the "Manage Server" permission enabled.`, error));
 };
 
 // TODO: Create memory channel.
@@ -62,11 +62,41 @@ client.on('guildMemberRemove', (member) => log.console('User left a guild.'));
 client.on('inviteCreate', (invite) => cacheInvites(invite.guild));
 
 // TODO: Command parsing.
-client.on('message', (guild) => null);
+client.on('message', (message) => {
+	// Only check request messages from humans.
+	if (message.author.bot) { return; }
+	if (!message.content.startsWith(client.PREFIX)) { return; }
+
+	// Parse request string.
+	const args = message.content.slice(client.PREFIX.length).split(/ +/);
+	const commandName = args.shift().toLowerCase();
+
+	// Ensure that command name is legal.
+	if (!commandName.startsWith(/[a-z]/)) { return; }
+	if (!client.commands.has(commandName)) { return log.channel(log.types.WARNING, message.channel, `Unknown command "${commandName}".`); }
+
+	// Get command data.
+	const command = client.commands.get(commandName);
+	if (!command) { return log.unified(log.types.ERROR, message.guild, `Unable to get file for known command "${commandName}".`); }
+
+	// Ensure that there are enough arguments.
+	const numExpectedArgs = (command.usage.match(/\(/g) || []).length;
+	if (command.usage && numExpectedArgs > args.length) { return log.channel(log.types.WARNING, message.channel, `Not enough arguments passed. Expected ${numExpectedArgs}, supplied ${args.length}.`); }
+
+	// Execute the command.
+	const request = { message: message, command: command, args: args };
+	command.execute(request);
+
+	// Delete the request message.
+	message.delete().catch((error) => log.console(`Failed to delete message ${message}.`));
+});
 
 // TODO: Meme of the day registration.
 // TODO: Reaction role distribution.
 client.on('messageReactionAdd', (reaction, user) => log.console('Reaction added to message.'));
+
+// TODO: Reaction role distribution.
+client.on('messageReactionRemove', (reaction, user) => log.console('Reaction removed from message.'));
 
 // TODO: Warn servers that don't have a memory channel.
 // TODO: Cache memory channels.

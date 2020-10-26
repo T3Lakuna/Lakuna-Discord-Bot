@@ -6,9 +6,8 @@ const colors = require('./colors.js');
 const types = { SUCCESS: 'success', WARNING: 'warning', ERROR: 'error', INFO: 'info' };
 exports.types = types;
 
-// Convenience method for logging to server and console.
-exports.unified = (logType, guild, ...messages) => {
-	// Get log type information.
+const channel = (logType, channel, ...messages) => {
+	// Get log type color.
 	let usedColor;
 	switch (logType) {
 		case types.SUCCESS: usedColor = colors.GREEN; break;
@@ -18,27 +17,34 @@ exports.unified = (logType, guild, ...messages) => {
 		default: log(types.ERROR, guild, `Unknown log type "${logType}".`);
 	}
 
-	// Console output.
-	if (guild == null || logType == types.ERROR) {
-		let consoleOutput = `[${new Date().toISOString()}] ${logType}:\n`;
-		messages.forEach((message) => consoleOutput += `\t${message}\n`);
-		console.log(`${consoleOutput}`);
-	}
+	// Build MessageEmbed.
+	let channelOutput = new discord.MessageEmbed()
+			.setColor(usedColor)
+			.setDescription(messages[0])
+			.setTitle(`Lakuna: ${logType}`);
+	for (let i = 1; i < messages.length; i++) { channelOutput.addField(`Part ${i}`, messages[i]); }
 
-	// Guild output.
-	if (guild && guild.systemChannel) {
-		let guildOutput = new discord.MessageEmbed()
-				.setColor(usedColor)
-				.setDescription(messages[0])
-				.setTitle(`Lakuna: ${logType}`);
-		for (let i = 1; i < messages.length; i++) { guildOutput.addField(`Message ${i}`, messages[i]); }
+	// Send MessageEmbed.
+	channel.send(channelOutput);
+}
+exports.channel = channel;
 
-		guild.systemChannel.send(guildOutput);
-	}
-};
+const guild = (logType, guild, ...messages) => {
+	if (guild && guild.systemChannel) { channel(logType, guild.systemChannel, ...messages); }
+}
+exports.guild = guild;
 
-exports.console = (...messages) => {
+// Log to console.
+const console = (...messages) => {
 	let consoleOutput = `[${new Date().toISOString()}]\n`;
 	messages.forEach((message) => consoleOutput += `\t${message}\n`);
 	console.log(`${consoleOutput}`);
 }
+exports.console = console;
+
+// Log to guild and console.
+const unified = (logType, guild, ...messages) => {
+	console(...messages);
+	guild(logType, guild, ...messages);
+};
+exports.unified = unified;
