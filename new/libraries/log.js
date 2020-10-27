@@ -47,4 +47,4 @@ module.exports = {
 		module.exports.console(...messages);
 		module.exports.guild(logType, guild, ...messages);
 	}
-}
+};

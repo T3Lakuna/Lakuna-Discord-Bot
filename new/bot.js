@@ -4,7 +4,7 @@ const fs = require('fs');
 const config = require('./config.js');
 const log = require(`${config.LIB_PATH}/log.js`);
 const commands = require(`${config.LIB_PATH}/commands.js`);
-const guildMemory = require(`${config.LIB_PATH}/guildMemory.js`);
+const guilds = require(`${config.LIB_PATH}/guilds.js`);
 
 // Create client.
 const client = new discord.Client();
@@ -13,15 +13,15 @@ const client = new discord.Client();
 client.PREFIX = config.PREFIX;
 
 // Log errors to the console.
-client.on('error', (error) => log.console('Client error.', error));
-client.on('shardError', (error, shardId) => log.console(`Shard #${shardId} error.`, error));
+client.on('error', (error) => log.console('Event error.', error));
+client.on('shardError', (error, shardId) => log.console('Event shardError.', `Shard ID #${shardId}`, error));
 
 // Load commands.
-commands.cacheCommands(client);
+commands.cache(client);
 
 client.on('ready', () => {
 	// Load memories.
-	guildMemory.cacheMemories(client);
+	guilds.cache(client);
 
 	// Set activity to help message.
 	client.user.setActivity(`${client.PREFIX}${config.HELP_COMMAND_NAME}`);
@@ -29,19 +29,24 @@ client.on('ready', () => {
 
 // If there is no memory channel in the current server, try to link it to the new channel.
 client.on('channelCreate', (channel) => {
-	if (channel.guild && !guildMemory.guildData(channel.guild).memoryChannel) {
-		guildMemory.cacheMemoryChannel(channel.guild);
-	}
+	if (!channel.guild) { return; }
+
+	const data = client.guildData.get(channel.guild.id);
+	if (!data || !data.memory) { return log.unified(log.types.ERROR, channel.guild, 'Guild data does not exist. Please contact the bot author.', 'Event channelCreate'); }
+
+	if (!data.memory.channel) { guilds.cache(channel.guild, { postMemoryChannelIntroMessage: data.joined, parts: [guilds.cacheParts.MEMORY_CHANNEL] }); }
 });
 
 // Warn the guild if the memory channel is deleted.
 client.on('channelDelete', (channel) => {
 	if (!channel.guild) { return; }
-	const guildData = guildMemory.guildData(channel.guild);
 
-	if (guildData.memoryChannel == channel) {
+	const data = client.guildData.get(channel.guild.id);
+	if (!data || !data.memory) { return log.unified(log.types.ERROR, channel.guild, 'Guild data does not exist. Please contact the bot author.', 'Event channelDelete.'); }
+
+	if (data.memory.channel == channel) {
 		log.guild(log.types.WARNING, channel.guild, 'The memory channel has been deleted. Some features may not work unless another is created.');
-		guildMemory.cacheMemoryChannel(channel.guild);
+		guilds.cache(channel.guild, { postMemoryChannelIntroMessage: true, parts: [guilds.cacheParts.MEMORY_CHANNEL] });
 	}
 });
 
@@ -49,7 +54,7 @@ client.on('channelDelete', (channel) => {
 // client.on('channelPinsUpdate', (channel, time) => log.console('Channel pins updated.'));
 
 client.on('guildCreate', (guild) => {
-	guildMemory.cacheGuild(guild, true);
+	guilds.cache(guild, { createMemoryChannel: true, alreadyJoined: false });
 
 	// Greetings message.
 	log.guild(log.types.INFO, guild, `Hello, ${guild.name}! Thank you for inviting me to your server. If you ever need help, you can access a list of my commands with \`${client.PREFIX}${config.HELP_COMMAND_NAME}\` or by tagging me.`);
@@ -63,12 +68,12 @@ client.on('guildCreate', (guild) => {
 // client.on('guildMemberRemove', (member) => log.console('User left a guild.'));
 
 // Update invite cache.
-client.on('inviteCreate', (invite) => guildMemory.cacheInvites(invite.guild));
+client.on('inviteCreate', (invite) => guilds.cache(invite.guild, { parts: [guilds.cacheParts.INVITES] }));
 
 // TODO: Respond to mentions?
 // TODO: Warn user for talking in memory channel.
 client.on('message', (message) => {
-	commands.parseCommand(message);
+	commands.parse(message);
 });
 
 // TODO: Meme of the day registration.

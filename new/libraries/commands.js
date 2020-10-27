@@ -5,8 +5,8 @@ const log = require('./log.js');
 const config = require('../config.js');
 
 module.exports = {
-	// Load commands from directory.
-	cacheCommands: (client) => {
+	// Load commands from directory and save them to the 
+	cache: (client) => {
 		client.commands = new discord.Collection();
 
 		fs.readdir(config.COMMANDS_PATH, (error, files) => {
@@ -24,7 +24,7 @@ module.exports = {
 	},
 
 	// Parse and execute a command from a message.
-	parseCommand: (message) => {
+	parse: (message) => {
 		// Don't try to parse a command if there are no commands.
 		if (!message.client.commands) { return log.channel(log.types.ERROR, message.channel, `Client commands are not set. Contact the bot author.`); }
 
@@ -55,4 +55,4 @@ module.exports = {
 		// Delete the request message.
 		message.delete().catch((error) => log.console(`Failed to delete message ${message}.`));
 	}
-}
+};

@@ -9,4 +9,4 @@ module.exports = {
 	HELP_COMMAND_NAME: 'help',
 	MEMORY_CHANNEL_NAME: 'lakuna-memory',
 	PERMISSIONS_INTEGER: 272100466
-}
+};
