@@ -11,15 +11,26 @@ module.exports = {
 		MEMORIES: 'memories'
 	},
 
+	// TODO: Return a promise so that .then can be used (such as in invite.js).
 	// Update cache.
 	cache: (clientOrGuild, settings) => {
 		const cacheGuild = (guild, settings) => {
-			const data = { invites: null, joined: settings.alreadyJoined, memory: { channel: null, memories: null } };
+			const memory = {
+				invites: null,
+				joined: settings.alreadyJoined,
+				channel: null,
+				memories: null,
+				cache: (settings) => cacheGuild(guild, settings)
+			};
 
 			// Invites.
 			if (settings.parts.includes(module.exports.parts.INVITES)) {
 				guild.fetchInvites()
-						.then((invites) => guild.client.memory.get(guild.id).invites = invites)
+						.then((invites) => {
+							guild.client.memory.get(guild.id).invites = invites;
+
+							log.console('Invites saved.', invites); // TODO: Delete.
+						})
 						.catch((error) => log.guild(log.types.WARNING, guild, `Lakuna was unable to fetch invites for ${guild}. Please make sure that the bot has the \`Manage Server\` permission enabled.`, error));
 			}
 
@@ -28,7 +39,7 @@ module.exports = {
 			if (settings.parts.includes(module.exports.parts.CHANNEL)) {
 				const memoryChannel = guild.channels.cache.find((channel) => channel.name == config.MEMORY_CHANNEL_NAME);
 				if (memoryChannel) {
-					data.memory.channel = memoryChannel;
+					memory.channel = memoryChannel;
 					if (settings.postMemoryChannelIntroMessage) {
 						log.guild(log.types.SUCCESS, guild, `Successfully set memory channel to ${memoryChannel}.`);
 						log.channel(log.types.INFO, memoryChannel, MEMORY_CHANNEL_INTRO_MESSAGE);
@@ -37,7 +48,7 @@ module.exports = {
 					// Create a memory channel.
 					guild.channels.create(config.MEMORY_CHANNEL_NAME)
 							.then((channel) => {
-								data.memory.channel = channel;
+								memory.channel = channel;
 
 								log.guild(log.types.SUCCESS, guild, `Lakuna created memory channel ${channel}. This is used in some features to store permanent server data in a way that can be easily managed by server admins.`);
 								log.channel(log.types.INFO, channel, MEMORY_CHANNEL_INTRO_MESSAGE); // Automatically post intro message if channel is created.
@@ -55,7 +66,7 @@ module.exports = {
 			// Memories.
 			if (settings.parts.includes(module.exports.parts.MEMORIES)) { } // TODO
 
-			guild.client.memory.set(guild.id, data);
+			guild.client.memory.set(guild.id, memory);
 		};
 
 		// Default settings.
@@ -77,10 +88,13 @@ module.exports = {
 	},
 
 	checkWarn: (message) => {
-		if (message.client.memory.get(message.guild.id).memory.channel == message.channel && message.author != message.client.user) {
+		if (message.client.memory.get(message.guild.id).channel == message.channel && message.author != message.client.user) {
 			log.guild(log.types.WARNING, message.guild, `${message.author}, please do not send messages in the memory channel! It is easier for Lakuna to remember your settings if there are less messages.`);
 			message.delete().catch((error) => log.guild(log.types.WARNING, message.guild, `Failed to delete message ${message}. Please make sure that the bot has the \`Manage Messages\` permission enabled.`));
+			return true; // Had to warn user.
 		}
+
+		return false; // Did not have to warn user.
 	},
 
 	addEntry: () => { }, // TODO

@@ -13,6 +13,7 @@ const client = new discord.Client({
 	ws: { intents: [
 		'GUILDS', // GUILD_CREATE, CHANNEL_CREATE, CHANNEL_DELETE, CHANNEL_PINS_UPDATE
 		'GUILD_MEMBERS', // GUILD_MEMBER_ADD, GUILD_MEMBER_REMOVE
+		'GUILD_INVITES', // INVITE_CREATE, INVITE_DELETE
 		'GUILD_MESSAGES', // MESSAGE_CREATE, MESSAGE_DELETE, MESSAGE_DELETE_BULK
 		'GUILD_MESSAGE_REACTIONS' // MESSAGE_REACTION_ADD, MESSAGE_REACTION_REMOVE
 	] }
@@ -39,36 +40,28 @@ client.on('ready', () => {
 // If there is no memory channel in the current server, try to link it to the new channel.
 client.on('channelCreate', (channel) => {
 	if (!channel.guild) { return; }
-
-	const data = client.memory.get(channel.guild.id);
-	if (!data || !data.memory) { return log.unified(log.types.ERROR, channel.guild, 'Memory does not exist. Please contact the bot author.', 'Event channelCreate'); }
-
-	if (!data.memory.channel) { memory.cache(channel.guild, { postMemoryChannelIntroMessage: data.joined, parts: [memory.parts.CHANNEL] }); }
+	const guildMemory = client.memory.get(channel.guild.id);
+	if (!guildMemory) { return log.unified(log.types.ERROR, channel.guild, 'Guild memory does not exist. Please contact the bot author.', 'Event channelCreate.'); }
+	if (!guildMemory.channel) { guildMemory.cache({ postMemoryChannelIntroMessage: data.joined, parts: [memory.parts.CHANNEL, memory.parts.MEMORIES] }); }
 });
 
 // Warn the guild if the memory channel is deleted.
 client.on('channelDelete', (channel) => {
 	if (!channel.guild) { return; }
-
-	const data = client.memory.get(channel.guild.id);
-	if (!data || !data.memory) { return log.unified(log.types.ERROR, channel.guild, 'Memory does not exist. Please contact the bot author.', 'Event channelDelete.'); }
-
-	if (data.memory.channel == channel) {
+	const guildMemory = client.memory.get(channel.guild.id);
+	if (!guildMemory) { return log.unified(log.types.ERROR, channel.guild, 'Guild memory does not exist. Please contact the bot author.', 'Event channelDelete.'); }
+	if (guildMemory.channel == channel) {
 		log.guild(log.types.WARNING, channel.guild, 'The memory channel has been deleted. Some features may not work unless another is created.');
-		memory.cache(channel.guild, { postMemoryChannelIntroMessage: true, parts: [memory.parts.CHANNEL] });
+		guildMemory.cache({ parts: [memory.parts.CHANNEL, memory.parts.MEMORIES] });
 	}
 });
 
 // Update memory.
 client.on('channelPinsUpdate', (channel, time) => {
 	if (!channel.guild) { return; }
-
-	const data = client.memory.get(channel.guild.id);
-	if (!data || !data.memory) { return log.unified(log.types.ERROR, channel.guild, 'Memory does not exist. Please contact the bot author.', 'Event channelPinsUpdate.'); }
-
-	if (data.memory.channel == channel) {
-		memory.cache(channel.guild, { parts: [memory.parts.MEMORIES] })
-	}
+	const guildMemory = client.memory.get(channel.guild.id);
+	if (!guildMemory) { return log.unified(log.types.ERROR, channel.guild, 'Guild memory does not exist. Please contact the bot author.', 'Event channelPinsUpdate.'); }
+	if (guildMemory.channel == channel) { guildMemory.cache({ parts: [memory.parts.MEMORIES] }); }
 });
 
 client.on('guildCreate', (guild) => {
@@ -88,13 +81,21 @@ client.on('guildMemberRemove', (member) => log.guild(log.types.INFO, member.guil
 
 // Update invite cache.
 client.on('inviteCreate', (invite) => memory.cache(invite.guild, { parts: [memory.parts.INVITES] }));
+client.on('inviteDelete', (invite) => memory.cache(invite.guild, { parts: [memory.parts.INVITES] }));
 
 client.on('message', (message) => {
+	if (!message.guild) { return; } // Ignore DMs.
+	if (memory.checkWarn(message)) { return; } // Message sent in memory.
+
 	commands.parse(message);
-	memory.checkWarn(message);
 
 	// Respond to mentions.
 	if (message.mentions.has(client.user)) { log.channel(log.types.INFO, message.channel, `Hello, ${message.author}! Get a list of my commands using \`${client.PREFIX}${config.HELP_COMMAND_NAME}\`.`); }
+
+	// Update memory if message sent in memory channel.
+	const guildMemory = client.memory.get(message.guild.id);
+	if (!guildMemory) { return log.unified(log.types.ERROR, message.guild, 'Guild memory does not exist. Please contact the bot author.', 'Event message.'); }
+	if (guildMemory.channel == message.channel) { guildMemory.cache({ parts: [memory.parts.MEMORIES] }); }
 });
 
 // Log in.

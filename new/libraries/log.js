@@ -39,7 +39,24 @@ module.exports = {
 
 	console: (...messages) => {
 		let consoleOutput = `[${new Date().toISOString()}]\n`;
-		messages.forEach((message) => consoleOutput += `\t${message}\n`);
+		messages.forEach((message) => {
+			if (typeof message == 'object') {
+				if (typeof message[Symbol.iterator] == 'function') {
+					// Print iterable object.
+					consoleOutput += '\tIterable:\n';
+					for (const part of message) { consoleOutput += `\t\t${part}\n`}
+				} else if ('toJSON' in message) {
+					// Print non-iterable JSON-ifiable object.
+					consoleOutput += `\t${JSON.stringify(message)}\n`;
+				} else {
+					// Print non-iterable, non-JSON-ifiable object (such as errors).
+					consoleOutput += `\t${message}\n`;
+				}
+			} else {
+				// Print non-object.
+				consoleOutput += `\t${message}\n`;
+			}
+		});
 		console.log(consoleOutput);
 	},
 
