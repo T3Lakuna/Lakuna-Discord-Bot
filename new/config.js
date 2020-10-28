@@ -4,6 +4,11 @@ module.exports = {
 	LIB_PATH: './libraries',
 	COMMANDS_PATH: './commands',
 
+	// Message Embed Names.
+	MOTD_EMBED_NAME: 'Meme of the Day',
+	REACTION_ROLE_EMBED_NAME: 'Reaction Roles',
+	MEMORY_EMBED_NAME: 'Memory',
+
 	// Miscellaneous.
 	PREFIX: '!~',
 	HELP_COMMAND_NAME: 'help',

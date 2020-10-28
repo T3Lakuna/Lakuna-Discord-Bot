@@ -53,6 +53,6 @@ module.exports = {
 		command.execute(request);
 
 		// Delete the request message.
-		message.delete().catch((error) => log.console(`Failed to delete message ${message}.`));
+		message.delete().catch((error) => log.guild(log.types.WARNING, message.guild, `Failed to delete message ${message}. Please make sure that the bot has the \`Manage Messages\` permission enabled.`));
 	}
 };
