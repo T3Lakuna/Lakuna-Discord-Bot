@@ -1,23 +1,30 @@
 {
-  "name": "lakuna",
-  "version": "1.0.0",
-  "description": "",
+  "name": "lakuna-discord-bot",
+  "version": "2.0.0",
+  "description": "Lakuna is a lightweight Discord bot with a standard set of commands focused on being aesthetically pleasing, lightweight, and non-intrusive.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/T3rrabyte/Lakuna.git"
+    "url": "git+https://github.com/T3Lakuna/Lakuna-Discord-Bot.git"
   },
+  "keywords": [
+    "discord",
+    "bot",
+    "javascript",
+    "nodejs"
+  ],
   "author": "Travis Martin",
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/T3rrabyte/Lakuna/issues"
+    "url": "https://github.com/T3Lakuna/Lakuna-Discord-Bot/issues"
   },
-  "homepage": "https://github.com/T3rrabyte/Lakuna#readme",
+  "homepage": "https://github.com/T3Lakuna/Lakuna-Discord-Bot#readme",
   "dependencies": {
-    "discord.js": "^12.2.0",
+    "@discordjs/opus": "^0.3.3",
+    "discord.js": "^12.4.1",
     "dotenv": "^8.2.0"
   }
 }
