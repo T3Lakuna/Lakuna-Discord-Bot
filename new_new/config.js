@@ -1,13 +1,13 @@
 module.exports = {
 	// Files.
 	BOT_PATH: './bot.js',
-	LIB_PATH: './lib',
-	CMD_PATH: './cmd',
+	LIB_DIR: './lib/',
+	CMD_DIR: './cmd/',
 
 	// Message embeds.
 	MOTD_EMBED_NAME: 'Meme of the Day',
 	REACTION_ROLE_EMBED_NAME: 'Reaction Roles',
-	MEMORY_EMBED_NAME = 'Memory',
+	MEMORY_EMBED_NAME: 'Memory',
 
 	// Miscellaneous.
 	PREFIX: '!~',
