@@ -9,6 +9,10 @@ module.exports = {
 	REACTION_ROLE_EMBED_NAME: 'Reaction Roles',
 	MEMORY_EMBED_NAME: 'Memory',
 
+	// Leveling. Experience required for level X: (LRSM ^ X) * LRM * X.
+	LEVEL_REQUIREMENT_STEP_MULTIPLIER: 1.01,
+	LEVEL_REQUIREMENT_MULTIPLIER: 100
+
 	// Miscellaneous.
 	PREFIX: '!~',
 	HELP_COMMAND_NAME: 'help',
