@@ -23,6 +23,7 @@ client.PREFIX = config.PREFIX;
 client.on('error', (error) => log.console('Event error.', error));
 client.on('shardError', (error, shardId) => log.console('Event shardError.', `Shard ID #${shardId}`, error));
 
+// Load commands.
 cmd.cache(client);
 
 client.on('ready', () => {
