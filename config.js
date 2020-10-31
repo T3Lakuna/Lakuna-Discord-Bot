@@ -6,8 +6,7 @@ module.exports = {
 
 	// Message embeds.
 	MOTD_EMBED_NAME: 'Meme of the Day',
-	REACTION_ROLE_EMBED_NAME: 'Reaction Roles',
-	MEMORY_EMBED_NAME: 'Memory',
+	REACTION_ROLE_EMBED_NAME: 'Reaction Roles'
 
 	// Leveling. Experience required for level X: (LRSM ^ X) * LRM * X.
 	LEVEL_REQUIREMENT_STEP_MULTIPLIER: 1.01,
@@ -16,6 +15,5 @@ module.exports = {
 	// Miscellaneous.
 	PREFIX: '!~',
 	HELP_COMMAND_NAME: 'help',
-	MEMORY_CHANNEL_NAME: 'lakuna-memory',
 	PERMISSIONS_INTEGER: 272100466
 };

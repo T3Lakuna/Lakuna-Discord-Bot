@@ -2,6 +2,7 @@ const discord = require('discord.js');
 const fs = require('fs');
 const config = require('./config.js');
 const log = require(`${config.LIB_DIR}log.js`);
+const cmd = require(`${config.LIB_DIR}cmd.js`);
 
 // Create client.
 const client = new discord.Client({
@@ -22,23 +23,15 @@ client.PREFIX = config.PREFIX;
 client.on('error', (error) => log.console('Event error.', error));
 client.on('shardError', (error, shardId) => log.console('Event shardError.', `Shard ID #${shardId}`, error));
 
-// TODO: Cache commands.
+cmd.cache(client);
 
 client.on('ready', () => {
-	// TODO: Load memory.
+	// TODO: Load invites.
 
 	client.user.setActivity(`${client.PREFIX}${config.HELP_COMMAND_NAME}`);
 });
 
-// TODO: Try to assign memory channel on channel create.
-
-// TODO: Warn guild if memory channel is deleted.
-
-// TODO: Update pins when channel updates.
-
 client.on('guildCreate', (guild) => {
-	// TODO: Cache guild to memory when joining a guild.
-
 	log.discord(guild, {
 		fields: [
 			{ name: 'Website', value: 'https://lakuna.pw' },
@@ -52,6 +45,7 @@ client.on('guildCreate', (guild) => {
 });
 
 // TODO: Add roles based on invite link.
+// TODO: Update invites when a user joins the server.
 
 // Send a message when a user leaves the guild.
 client.on('guildMemberRemove', (member) => log.discord(member.guild, {
@@ -62,12 +56,14 @@ client.on('guildMemberRemove', (member) => log.discord(member.guild, {
 
 // TODO: Update invite cache on invite create and delete.
 
+// TODO: Toggle reaction roles on reaction add, then remove the new reaction.
+
 client.on('message', (message) => {
-	if (!message.guild) { return; } // Ignore DMs.
+	// Ignore DMs.
+	if (!message.guild) { return; }
 
-	// TODO: Warn user if message is sent in memory channel and delete message.
-
-	// TODO: Parse commands.
+	// Parse and execute commands.
+	cmd.execute(message);
 
 	// Respond to mentions.
 	if (message.mentions.has(client.user)) { log.discord(message.channel, {
@@ -78,8 +74,6 @@ client.on('message', (message) => {
 		description: `Hello, ${message.author}! Get a list of my commands using \`${client.PREFIX}${config.HELP_COMMAND_NAME}\`.`,
 		title: 'Hello!'
 	}); }
-
-	// TODO: Update memory if message is sent to memory channel.
 });
 
 // Login to start bot.
