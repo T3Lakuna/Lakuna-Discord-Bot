@@ -4,7 +4,7 @@ const log = require(`.${config.LIB_DIR}log.js`);
 const cmd = require(`.${config.LIB_DIR}cmd.js`);
 
 module.exports = {
-	aliases: ['help'],
+	aliases: [config.HELP_COMMAND_NAME],
 	usage: 'HELP [Command | Category]',
 	description: 'Returns a list of commands.',
 	category: cmd.categories.UNCATEGORIZED,
