@@ -40,7 +40,7 @@ client.on('guildCreate', (guild) => {
 		],
 		description: 'Thank you for inviting me to your server. If you ever need help, you can access a list of my commands with ' +
 				`\`${client.PREFIX}${config.HELP_COMMAND_NAME}\` or by tagging me.`,
-		imageURL: client.user.displayAvatarURL(),
+		thumbnailURL: client.user.displayAvatarURL(),
 		title: `Hello, ${guild}!`
 	});
 });
