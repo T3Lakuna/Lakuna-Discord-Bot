@@ -24,7 +24,7 @@ pool.connect()
 					.then(() => client.query('CREATE TABLE Guilds (ID TEXT, MotDID TEXT);'))
 					.then((response) => log.console('Created guilds table.', response))
 					.catch((error) => log.console('Error creating guilds table.', error))
-					.then(() => client.query('CREATE TABLE Invites (ID TEXT, GuildID TEXT, RoleID TEXT);'))
+					.then(() => client.query('CREATE TABLE Invites (ID TEXT, RoleID TEXT);'))
 					.then((response) => log.console('Created invites table.', response))
 					.catch((error) => log.console('Error creating invites table.', error))
 					.then(() => client.end());

@@ -3,6 +3,7 @@ const fs = require('fs');
 const config = require('./config.js');
 const log = require(`${config.LIB_DIR}log.js`);
 const cmd = require(`${config.LIB_DIR}cmd.js`);
+const invites = require(`${config.LIB_DIR}invites.js`);
 
 // Create client.
 const client = new discord.Client({
@@ -27,12 +28,13 @@ client.on('shardError', (error, shardId) => log.console('Event shardError.', `Sh
 cmd.cache(client);
 
 client.on('ready', () => {
-	// TODO: Load invites.
+	invites.cache(client).catch((error) => log.console(`Shard failed to cache invites.`, error));
 
 	client.user.setActivity(`${client.PREFIX}${config.HELP_COMMAND_NAME}`);
 });
 
 client.on('guildCreate', (guild) => {
+	// Send a message to newly-joined guilds.
 	log.discord(guild, {
 		fields: [
 			{ name: 'Website', value: 'https://lakuna.pw' },
@@ -43,19 +45,48 @@ client.on('guildCreate', (guild) => {
 		thumbnailURL: client.user.displayAvatarURL(),
 		title: `Hello, ${guild}!`
 	});
+
+	// Cache invites.
+	invites.cache(guild); // Missing permissions if failed.
 });
 
 // TODO: Add roles based on invite link.
-// TODO: Update invites when a user joins the server.
+client.on('guildMemberAdd', (member) => {
+	invites.findUsed(member.guild)
+			.then((usedInv) => {
+				log.discord(member.guild.systemChannel, {
+					fields: [
+						{ name: 'Invite Code', value: usedInv.code }
+					],
+					description: `${member} has joined the guild.`,
+					thumbnailURL: member.user.displayAvatarURL(),
+					title: 'User joined guild.'
+				});
+			})
+			.catch((error) => {
+				log.discord(member.guild.systemChannel, {
+					fields: [
+						{ name: 'Invite Code', value: 'Unable to access' }
+					],
+					description: `${member} has joined the guild.`,
+					thumbnailURL: member.user.displayAvatarURL(),
+					title: 'User joined guild.'
+				});
+			}); // Missing permissions.
+})
 
 // Send a message when a user leaves the guild.
-client.on('guildMemberRemove', (member) => log.discord(member.guild, {
+client.on('guildMemberRemove', (member) => log.discord(member.guild.systemChannel, {
 	description: `${member} has left the guild.`,
-	imageURL: member.user.displayAvatarURL(),
-	title: 'User Left Guild'
+	thumbnailURL: member.user.displayAvatarURL(),
+	title: 'User left guild.'
 }));
 
-// TODO: Update invite cache on invite create and delete.
+// Update invite cache on invite create and delete.
+client.on('inviteCreate', (invite) => {
+	invites.cache(invite.guild);
+});
+client.on('inviteDelete', (invite) => invites.cache(invite.guild));
 
 // TODO: Toggle reaction roles on reaction add, then remove the new reaction.
 
