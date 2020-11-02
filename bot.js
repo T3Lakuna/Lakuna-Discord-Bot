@@ -17,9 +17,6 @@ const client = new discord.Client({
 	] }
 });
 
-// Assign command prefix to client.
-client.PREFIX = config.PREFIX;
-
 // Log errors to the console.
 client.on('error', (error) => log.console('Event error.', error));
 client.on('shardError', (error, shardId) => log.console('Event shardError.', `Shard ID #${shardId}`, error));
@@ -30,7 +27,7 @@ cmd.cache(client);
 client.on('ready', () => {
 	invites.cache(client).catch((error) => log.console(`Shard failed to cache invites.`, error));
 
-	client.user.setActivity(`${client.PREFIX}${config.HELP_COMMAND_NAME}`);
+	client.user.setActivity(`${config.PREFIX}${config.HELP_COMMAND_NAME}`);
 });
 
 client.on('guildCreate', (guild) => {
@@ -41,7 +38,7 @@ client.on('guildCreate', (guild) => {
 			{ name: 'Support Server', value: 'https://lakuna.pw/r/discord' }
 		],
 		description: 'Thank you for inviting me to your server. If you ever need help, you can access a list of my commands with ' +
-				`\`${client.PREFIX}${config.HELP_COMMAND_NAME}\` or by tagging me.`,
+				`\`${config.PREFIX}${config.HELP_COMMAND_NAME}\` or by tagging me.`,
 		thumbnailURL: client.user.displayAvatarURL(),
 		title: `Hello, ${guild}!`
 	});
@@ -103,7 +100,7 @@ client.on('message', (message) => {
 			{ name: 'Website', value: 'https://lakuna.pw' },
 			{ name: 'Support Server', value: 'https://lakuna.pw/r/discord' }
 		],
-		description: `Hello, ${message.author}! Get a list of my commands using \`${client.PREFIX}${config.HELP_COMMAND_NAME}\`.`,
+		description: `Hello, ${message.author}! Get a list of my commands using \`${config.PREFIX}${config.HELP_COMMAND_NAME}\`.`,
 		title: 'Hello!'
 	}); }
 });
