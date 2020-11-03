@@ -11,7 +11,7 @@ module.exports = {
 		log.discord(request.message.channel, {
 			fields: [
 				{ name: 'Client', value: `${new Date() - request.message.createdAt}ms` },
-				{ name: 'API', value: `${Math.round(request.message.client.ws.ping)}ms`, }
+				{ name: 'API', value: `${Math.round(request.message.client.ws.ping)}ms` }
 			],
 			title: 'Pong!'
 		});
