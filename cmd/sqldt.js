@@ -10,17 +10,7 @@ module.exports = {
 	description: 'Drops SQL tables.',
 	category: cmd.categories.OWNER,
 	execute: (request) => {
-		const pool = new pg.Pool({
-			connectionString: process.env.DATABASE_URL,
-			ssl: { rejectUnauthorized: false }
-		});
-
-		pool.on('error', (error, client) => {
-			if (error) { log.unified(request.message.channel, 'Pool error.', client, error); }
-			pool.end();
-		});
-
-		return pool.connect()
+		return request.message.client.pool.connect()
 				.then((client) => {
 					client.query('DROP TABLE Users;')
 							.then((response) => log.discord(request.message.channel, { description: 'Dropped users table.' }))
@@ -33,7 +23,6 @@ module.exports = {
 							.catch((error) => log.unified(request.message.channel, 'Error dropping invites table.', error))
 							.then(() => client.end());
 				})
-				.catch((error) => log.unified(request.message.channel, 'Pool connect error.', error))
-				.then(() => pool.end());
+				.catch((error) => log.unified(request.message.channel, 'Pool connect error.', error));
 	}
 };

@@ -1,9 +1,11 @@
 const discord = require('discord.js');
 const fs = require('fs');
+const pg = require('pg');
 const config = require('./config.js');
 const log = require(`${config.LIB_DIR}log.js`);
 const cmd = require(`${config.LIB_DIR}cmd.js`);
 const invites = require(`${config.LIB_DIR}invites.js`);
+const roles = require(`${config.LIB_DIR}roles.js`);
 
 // Create client.
 const client = new discord.Client({
@@ -17,9 +19,19 @@ const client = new discord.Client({
 	] }
 });
 
+// Create SQL pool.
+client.pool = new pg.Pool({
+	connectionString: process.env.DATABASE_URL,
+	ssl: { rejectUnauthorized: false }
+});
+
 // Log errors to the console.
 client.on('error', (error) => log.console('Event error.', error));
 client.on('shardError', (error, shardId) => log.console('Event shardError.', `Shard ID #${shardId}`, error));
+client.pool.on('error', (error, sqlClient) => {
+	if (error) { log.console('SQL pool error.', sqlClient, error); }
+	pool.end();
+});
 
 // Load commands.
 cmd.cache(client);
@@ -85,7 +97,8 @@ client.on('inviteCreate', (invite) => {
 });
 client.on('inviteDelete', (invite) => invites.cache(invite.guild));
 
-// TODO: Toggle reaction roles on reaction add, then remove the new reaction.
+// Toggle reaction roles on reaction add.
+client.on('messageReactionAdd', (reaction, user) => roles.addFromReaction(reaction, user));
 
 client.on('message', (message) => {
 	// Ignore DMs.
