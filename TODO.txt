@@ -1,0 +1,28 @@
+Invite Roles
+Owner Announcement Command
+Information Commands
+Message to server owner if there is no system channel on join.
+Check for errors in more places.
+Utilize throw and reject more. Probably requires a pretty full rewrite.
+Utilize catch and try/catch more. Ditto^
+Check typeof/instanceof more often. Ditto^
+Attach libraries to client. Ditto^
+Stop using the log.createEmbed method. Use Discord.js built-in functionality for clarity.
+Log errors/warnings to DMs where possible if systemChannel isn't present.
+Link to website and support server more often, and to the GitHub issue tracker on errors.
+Remove indents from then/catch chains.
+help/support/issue/website command(s)?
+Return most similar command name in unknown command message.
+API commands:
+	lol - League of Legends stats, op.gg-esque spectate file.
+	mtg - return card or deck information for MTG.
+	mal - anime information.
+
+TODO files:
+bot.js
+lib/invites.js
+lib/motd.js
+lib/xp.js
+cmd/level.js
+
+Consider whether you actually want to do audio, motd, and levels.

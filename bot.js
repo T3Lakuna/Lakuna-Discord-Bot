@@ -37,7 +37,7 @@ client.pool.on('error', (error, sqlClient) => {
 cmd.cache(client);
 
 client.on('ready', () => {
-	invites.cache(client).catch((error) => log.console(`Shard failed to cache invites.`, error));
+	invites.cache(client).catch((error) => log.console('Shard failed to cache invites.', error));
 
 	client.user.setActivity(`${config.PREFIX}${config.HELP_COMMAND_NAME}`);
 });
@@ -62,30 +62,26 @@ client.on('guildCreate', (guild) => {
 // TODO: Add roles based on invite link.
 client.on('guildMemberAdd', (member) => {
 	invites.findUsed(member.guild)
-			.then((usedInv) => {
-				log.discord(member.guild.systemChannel, {
-					fields: [
-						{ name: 'Invite Code', value: usedInv.code }
-					],
-					description: `${member} has joined the guild.`,
-					thumbnailURL: member.user.displayAvatarURL(),
-					title: 'User joined guild.'
-				});
-			})
-			.catch((error) => {
-				log.discord(member.guild.systemChannel, {
-					fields: [
-						{ name: 'Invite Code', value: 'Unable to access' }
-					],
-					description: `${member} has joined the guild.`,
-					thumbnailURL: member.user.displayAvatarURL(),
-					title: 'User joined guild.'
-				});
-			}); // Missing permissions.
-})
+			.then((usedInv) => log.discord(member.guild, {
+				fields: [
+					{ name: 'Invite Code', value: usedInv.code }
+				],
+				description: `${member} has joined the guild.`,
+				thumbnailURL: member.user.displayAvatarURL(),
+				title: 'User joined guild.'
+			}))
+			.catch((error) => log.discord(member.guild, {
+				fields: [
+					{ name: 'Invite Code', value: 'Unable to access' }
+				],
+				description: `${member} has joined the guild.`,
+				thumbnailURL: member.user.displayAvatarURL(),
+				title: 'User joined guild.'
+			})); // Missing permissions.
+});
 
 // Send a message when a user leaves the guild.
-client.on('guildMemberRemove', (member) => log.discord(member.guild.systemChannel, {
+client.on('guildMemberRemove', (member) => log.discord(member.guild, {
 	description: `${member} has left the guild.`,
 	thumbnailURL: member.user.displayAvatarURL(),
 	title: 'User left guild.'

@@ -11,6 +11,8 @@ module.exports = {
 	// Leveling. Experience required for level X: (LRSM ^ X) * LRM * X.
 	LEVEL_REQUIREMENT_STEP_MULTIPLIER: 1.01,
 	LEVEL_REQUIREMENT_MULTIPLIER: 100,
+	MIN_MESSAGE_XP: 15,
+	MAX_MESSAGE_XP: 25,
 
 	// Miscellaneous.
 	PREFIX: '!~',
