@@ -59,7 +59,7 @@ module.exports = {
 				);
 			}
 
-			embed.addField(`${emoji}`, `${role}`);
+			embed.addField(`${emoji}`, `${role}`, true);
 			reactions.push(emoji);
 		}
 
