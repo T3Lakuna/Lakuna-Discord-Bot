@@ -1,118 +1,259 @@
-const discord = require('discord.js');
+const { Client, MessageEmbed, Emoji } = require('discord.js');
 const fs = require('fs');
-const pg = require('pg');
-const config = require('./config.js');
-const log = require(`${config.LIB_DIR}log.js`);
-const cmd = require(`${config.LIB_DIR}cmd.js`);
-const invites = require(`${config.LIB_DIR}invites.js`);
-const roles = require(`${config.LIB_DIR}roles.js`);
 
 // Create client.
-const client = new discord.Client({
-	partials: [ 'MESSAGE', 'REACTION' ],
-	ws: { intents: [
-		'GUILDS', // GUILD_CREATE, CHANNEL_CREATE, CHANNEL_DELETE, CHANNEL_PINS_UPDATE
-		'GUILD_MEMBERS', // GUILD_MEMBER_ADD, GUILD_MEMBER_REMOVE
-		'GUILD_INVITES', // INVITE_CREATE, INVITE_DELETE
-		'GUILD_MESSAGES', // MESSAGE_CREATE, MESSAGE_DELETE, MESSAGE_DELETE_BULK
-		'GUILD_MESSAGE_REACTIONS' // MESSAGE_REACTION_ADD, MESSAGE_REACTION_REMOVE
-	] }
+const client = new Client({
+	partials: [ 'GUILD_MEMBER', 'MESSAGE', 'REACTION' ],
+	ws: { intents: [ 'GUILDS', 'GUILD_MEMBERS', 'GUILD_INVITES', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS' ] }
 });
 
-// Create SQL pool.
-client.pool = new pg.Pool({
-	connectionString: process.env.DATABASE_URL,
-	ssl: { rejectUnauthorized: false }
-});
+// Constants.
+client.PREFIX = '~';
+client.colors = { SUCCESS: '#32CD32', WARNING: '#FDEE00', ERROR: '#FF2400', INFO: '#007FFF' };
+client.urls = {
+	REPO: 'https://github.com/T3Lakuna/Lakuna-Discord-Bot',
+	ISSUE: 'https://github.com/T3Lakuna/Lakuna-Discord-Bot/issues',
+	WEBSITE: 'https://lakuna.pw',
+	SUPPORT: 'https://lakuna.pw/r/discord'
+};
 
-// Log errors to the console.
-client.on('error', (error) => log.console('Event error.', error));
-client.on('shardError', (error, shardId) => log.console('Event shardError.', `Shard ID #${shardId}`, error));
-client.pool.on('error', (error, sqlClient) => {
-	if (error) { log.console('SQL pool error.', sqlClient, error); }
-	pool.end();
-});
+// Invite cache for invite link attribution.
+client.cachedInvites = new Map();
 
 // Load commands.
-cmd.cache(client);
+client.commands = [];
+fs.readdir('./commands/', (error, fileNames) => {
+	if (error) { return console.log(error); }
+	for (fileName of fileNames.filter((fileName) => fileName.endsWith('.js'))) { client.commands.push(require(`./commands/${fileName}`)); }
+});
+
+// Log errors.
+client.on('error', (error) => console.log);
+client.on('shardError', (error) => console.log);
 
 client.on('ready', () => {
-	invites.cache(client).catch((error) => log.console('Shard failed to cache invites.', error));
+	console.log('Ready.');
 
-	client.user.setActivity(`${config.PREFIX}${config.HELP_COMMAND_NAME}`);
+	client.guilds.cache.forEach((guild) => {
+		guild.fetchInvites()
+			.then((invites) => client.cachedInvites.set(guild.id, invites))
+			.catch((error) => console.log);
+	});
+
+	client.user.setActivity(`${client.PREFIX}help`);
 });
 
 client.on('guildCreate', (guild) => {
-	// Send a message to newly-joined guilds.
-	log.discord(guild, {
-		fields: [
-			{ name: 'Website', value: 'https://lakuna.pw' },
-			{ name: 'Support Server', value: 'https://lakuna.pw/r/discord' }
-		],
-		description: 'Thank you for inviting me to your server. If you ever need help, you can access a list of my commands with ' +
-				`\`${config.PREFIX}${config.HELP_COMMAND_NAME}\` or by tagging me.`,
-		thumbnailURL: client.user.displayAvatarURL(),
-		title: `Hello, ${guild}!`
-	});
+	if (!guild.systemChannel) { return; }
+	guild.fetchInvites()
+		.then((invites) => client.cachedInvites.set(guild.id, invites))
+		.catch((error) => console.log);
 
-	// Cache invites.
-	invites.cache(guild); // Missing permissions if failed.
+	guild.systemChannel.send(new MessageEmbed()
+		.setColor(client.colors.INFO)
+		.setTitle('Hello, world!')
+		.setDescription(
+			`Thank you for adding me to your server. To get help, use \`${client.PREFIX}help\` or just @ me.\n` +
+			'\n' +
+			'**Lakuna is developed by Travis Martin and is licensed under the GNU Affero General Public License version 3.0.**'
+		)
+		.addField('Source Code', client.urls.REPO)
+		.addField('Report an Issue', client.urls.ISSUE)
+		.addField('Website', client.urls.WEBSITE)
+		.addField('Support Server', client.urls.SUPPORT)
+	).catch((error) => console.log);
 });
 
-// TODO: Add roles based on invite link.
 client.on('guildMemberAdd', (member) => {
-	invites.findUsed(member.guild)
-			.then((usedInv) => log.discord(member.guild, {
-				fields: [
-					{ name: 'Invite Code', value: usedInv.code }
-				],
-				description: `${member} has joined the guild.`,
-				thumbnailURL: member.user.displayAvatarURL(),
-				title: 'User joined guild.'
-			}))
-			.catch((error) => log.discord(member.guild, {
-				fields: [
-					{ name: 'Invite Code', value: 'Unable to access' }
-				],
-				description: `${member} has joined the guild.`,
-				thumbnailURL: member.user.displayAvatarURL(),
-				title: 'User joined guild.'
-			})); // Missing permissions.
+	if (!member.guild.systemChannel) { return; }
+	const embed = new MessageEmbed()
+		.setColor(client.colors.INFO)
+		.setTitle('Member Joined Guild')
+		.setDescription(`${member} has joined the guild.`)
+		.setThumbnail(member.user.displayAvatarURL());
+	const oldInvites = client.cachedInvites.get(member.guild.id);
+	member.guild.fetchInvites()
+		.then((invites) => {
+			client.cachedInvites.set(member.guild.id, invites);
+			const newInvites = client.cachedInvites.get(member.guild.id);
+			const usedInvite = newInvites.find((invite) => oldInvites.get(invite.code).uses < invite.uses);
+			member.guild.systemChannel.send(embed.addField('Invite', usedInvite.code)).catch((error) => console.log);
+		})
+		.catch((error) => member.guild.systemChannel.send(embed).catch((error) => console.log));
 });
 
-// Send a message when a user leaves the guild.
-client.on('guildMemberRemove', (member) => log.discord(member.guild, {
-	description: `${member} has left the guild.`,
-	thumbnailURL: member.user.displayAvatarURL(),
-	title: 'User left guild.'
-}));
+client.on('guildMemberRemove', (member) => {
+	if (!member.guild.systemChannel) { return; }
+	member.guild.systemChannel.send(new MessageEmbed()
+		.setColor(client.colors.INFO)
+		.setTitle('Member Left Guild')
+		.setDescription(`${member} has left the guild.`)
+		.setThumbnail(member.user.displayAvatarURL())
+	).catch((error) => console.log);
+});
 
-// Update invite cache on invite create and delete.
 client.on('inviteCreate', (invite) => {
-	invites.cache(invite.guild);
+	invite.guild.fetchInvites()
+		.then((invites) => client.cachedInvites.set(invite.guild.id, invites))
+		.catch((error) => console.log);
 });
-client.on('inviteDelete', (invite) => invites.cache(invite.guild));
 
-// Toggle reaction roles on reaction add.
-client.on('messageReactionAdd', (reaction, user) => roles.addFromReaction(reaction, user));
+client.on('inviteDelete', (invite) => {
+	invite.guild.fetchInvites()
+		.then((invites) => client.cachedInvites.set(invite.guild.id, invites))
+		.catch((error) => console.log);
+});
+
+// Called once message is fetched if it's partial, or right away otherwise.
+client.on('messageReactionAdd', (reaction, user) => {
+	let embed;
+
+	const onFetchMember = (member) => {
+		embed.fields.forEach((field) => {
+			const emojiQuery = field.name.startsWith('<:') && field.name.endsWith('>')
+				? field.name.substring('<:'.length, field.name.length - '>'.length)
+				: field.name;
+			const emoji = emojiQuery instanceof Emoji
+				? emojiQuery // Unicode emojis.
+				: client.emojis.cache.find((emoji) =>
+					emoji == emojiQuery
+					|| emoji.id == emojiQuery
+					|| emoji.identifier == emojiQuery
+					|| emoji.name == emojiQuery
+				);
+			if (!emoji) {
+				return user.send(new MessageEmbed()
+					.setColor(client.colors.WARNING)
+					.setTitle('Emoji Not Found')
+					.setDescription(`The specified emoji, \`${emojiQuery}\`, could not be found.`)
+				);
+			}
+
+			if (emoji != reaction.emoji) { return; }
+
+			const roleQuery = field.value.startsWith('<@&') && field.value.endsWith('>')
+				? field.value.substring('<@&'.length, field.value.length - '>'.length)
+				: field.value
+			const role = reaction.message.guild.roles.cache.find((role) =>
+				role == roleQuery
+				|| role.id == roleQuery
+				|| role.name == roleQuery
+			);
+			if (!role) {
+				return user.send(new MessageEmbed()
+					.setColor(client.colors.WARNING)
+					.setTitle('Role Not Found')
+					.setDescription(`The specified role, \`${roleQuery}\`, could not be found.`)
+				);
+			}
+
+			if (member.roles.cache.has(role.id)) {
+				member.roles.remove(role).catch((error) => console.log);
+			} else {
+				member.roles.add(role).catch((error) => console.log);
+			}
+		});
+	};
+
+	const onFetchMessage = () => {
+		if (reaction.message.author != client.user) { return; }
+		if (user.bot) { return; }
+		if (!reaction.message.embeds) { return; }
+
+		embed = reaction.message.embeds[0];
+		if (embed.title != 'Role Reactions') { return; }
+
+		reaction.users.remove(user);
+
+		const member = reaction.message.guild.members.cache.find((member) => member.user == user);
+		if (member.partial) {
+			member.fetch()
+				.then(() => onFetchMember(member))
+				.catch((error) => console.log)
+		} else {
+			onFetchMember(member);
+		}
+	}
+
+	if (reaction.message.partial) {
+		reaction.message.fetch()
+			.then(() => onFetchMessage())
+			.catch((error) => console.log);
+	} else {
+		onFetchMessage();
+	}
+});
 
 client.on('message', (message) => {
-	// Ignore DMs.
-	if (!message.guild) { return; }
+	// Execute a command from the message.
+	const execute = () => {
+		// Get message parts.
+		const argRegex = /[^\s"]+|"([^"]*)"/gi;
+		const args = [];
+		const argsString = message.content.slice(client.PREFIX.length);
+		while (true) {
+			const match = argRegex.exec(argsString);
+			if (match == null) { break; }
+			args.push(match[1] ? match[1] : match[0]);
+		}
+		const commandName = args.shift().toLowerCase();
 
-	// Parse and execute commands.
-	cmd.execute(message);
+		// Ignore command names that don't start with a letter, since they're probably markdown.
+		if (!commandName.charAt(0).match(/[a-z]/)) { return; }
 
-	// Respond to mentions.
-	if (message.mentions.has(client.user)) { log.discord(message.channel, {
-		fields: [
-			{ name: 'Website', value: 'https://lakuna.pw' },
-			{ name: 'Support Server', value: 'https://lakuna.pw/r/discord' }
-		],
-		description: `Hello, ${message.author}! Get a list of my commands using \`${config.PREFIX}${config.HELP_COMMAND_NAME}\`.`,
-		title: 'Hello!'
-	}); }
+		const command = client.commands.find((command) => command.names.includes(commandName));
+		if (!command) {
+			return message.channel.send(new MessageEmbed()
+				.setColor(client.colors.WARNING)
+				.setTitle('Unknown Command')
+				.setDescription(`Unknown command. Use \`${client.PREFIX}help\` to get a list of commands.`)
+			).catch((error) => console.log);
+		}
+
+		// Check argument count.
+		if (command.usage) {
+			const numExpectedArgs = (command.usage.match(/\(/g) || []).length;
+			if (numExpectedArgs > args.length) {
+				return message.channel.send(new MessageEmbed()
+					.setColor(client.colors.WARNING)
+					.setTitle('Insufficient Arguments')
+					.setDescription('The command you tried to execute requires more arguments.')
+					.addField('Expected Arguments', numExpectedArgs)
+					.addField('Supplied Arguments', args.length)
+				).catch((error) => console.log);
+			}
+		}
+
+		try {
+			command.execute(message, args);
+		} catch (error) {
+			message.channel.send(new MessageEmbed()
+				.setColor(client.colors.ERROR)
+				.setTitle('Error')
+				.setDescription('There was an error executing that command. Please contact the bot author or report an issue.')
+				.addField('Error Message', `${error}`)
+				.addField('Support Server', client.urls.SUPPORT)
+				.addField('Report an Issue', client.urls.ISSUE)
+			).catch((error) => console.log);
+		}
+
+		message.delete().catch((error) => console.log);
+	}
+
+	if (message.author.bot) { return; }
+	if (message.content.startsWith(client.PREFIX)) { execute(); }
+
+	if (message.mentions.has(client.user)) {
+		return message.channel.send(new MessageEmbed()
+			.setColor(client.colors.INFO)
+			.setDescription(`Hello, ${message.author}! Get a list of my commands using \`${client.PREFIX}help\`.`)
+			.setTitle('Hello!')
+			.addField('Source Code', client.urls.REPO)
+			.addField('Report an Issue', client.urls.ISSUE)
+			.addField('Website', client.urls.WEBSITE)
+			.addField('Support Server', client.urls.SUPPORT)
+		).catch((error) => console.log);
+	}
 });
 
-// Login to start bot.
 client.login(process.env.TOKEN);
