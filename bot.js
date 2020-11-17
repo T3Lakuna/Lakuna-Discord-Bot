@@ -11,10 +11,10 @@ const client = new Client({
 client.PREFIX = '~';
 client.colors = { SUCCESS: '#32CD32', WARNING: '#FDEE00', ERROR: '#FF2400', INFO: '#007FFF' };
 client.urls = {
-	REPO: 'https://github.com/T3Lakuna/Lakuna-Discord-Bot',
-	ISSUE: 'https://github.com/T3Lakuna/Lakuna-Discord-Bot/issues',
-	WEBSITE: 'https://lakuna.pw',
-	SUPPORT: 'https://lakuna.pw/r/discord'
+	REPO: 'https://bot.lakuna.pw/r/repository',
+	ISSUE: 'https://bot.lakuna.pw/r/issue',
+	WEBSITE: 'https://bot.lakuna.pw/r/website',
+	SUPPORT: 'https://bot.lakuna.pw/r/support'
 };
 
 // Invite cache for invite link attribution.
