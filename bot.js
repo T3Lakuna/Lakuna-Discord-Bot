@@ -77,7 +77,7 @@ client.on('guildMemberAdd', (member) => {
 			client.cachedInvites.set(member.guild.id, invites);
 			const newInvites = client.cachedInvites.get(member.guild.id);
 			const usedInvite = newInvites.find((invite) => oldInvites.get(invite.code).uses < invite.uses);
-			member.guild.systemChannel.send(embed.addField('Invite', usedInvite.code)).catch((error) => console.log);
+			member.guild.systemChannel.send(embed.addField('Invite', usedInvite.code).addField('Inviter', usedInvite.inviter)).catch((error) => console.log);
 		})
 		.catch((error) => member.guild.systemChannel.send(embed).catch((error) => console.log));
 });
