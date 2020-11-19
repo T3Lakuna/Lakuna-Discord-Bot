@@ -1,7 +1,7 @@
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
-	names: ['invite'],
+	names: ['invite', 'inv', 'add'],
 	usage: 'INVITE',
 	description: 'Invite Lakuna to your server.',
 	execute: (message, args) => {
