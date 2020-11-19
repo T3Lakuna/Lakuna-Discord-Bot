@@ -32,7 +32,7 @@ module.exports = {
 						.setTitle('Unsupported')
 						.setDescription('Activities are currently unsupported by the view command.')
 				);
-			case "emote"
+			case "emote":
 			case "emoji":
 				return message.channel.send(new MessageEmbed()
 						.setColor(message.client.colors.WARNING)
