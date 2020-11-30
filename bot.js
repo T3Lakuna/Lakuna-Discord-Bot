@@ -243,7 +243,7 @@ client.on('message', (message) => {
 	if (message.author.bot) { return; }
 	if (message.content.startsWith(client.PREFIX)) { execute(); }
 
-	if (message.mentions.has(client.user)) {
+	if (message.mentions.users.has(client.user.id)) {
 		return message.channel.send(new MessageEmbed()
 			.setColor(client.colors.INFO)
 			.setDescription(`Hello, ${message.author}! Get a list of my commands using \`${client.PREFIX}help\`.`)
