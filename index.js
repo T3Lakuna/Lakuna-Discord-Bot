@@ -11,7 +11,7 @@ manager.on('shardCreate', (shard) => console.log);
 manager.spawn();
 
 // Website
-const port = 80;
+const port = process.env.PORT || 8080;
 const redirectHTML = (url) => `<meta http-equiv="Refresh" content="0; url=${url}" />`
 const website = express();
 website.get('/', (req, res) => res.send(redirectHTML(`https://top.gg/bot/${process.env.CLIENT_ID}`))); // Index
