@@ -106,64 +106,78 @@ client.on('inviteDelete', (invite) => {
 
 // Called once message is fetched if it's partial, or right away otherwise.
 client.on('messageReactionAdd', (reaction, user) => {
-	let embed;
-
 	const onFetchMember = (member) => {
-		embed.fields.forEach((field) => {
-			const emojiQuery = field.name.startsWith('<:') && field.name.endsWith('>')
-				? field.name.substring('<:'.length, field.name.length - '>'.length)
-				: field.name;
-			const emoji = emojiQuery instanceof Emoji
-				? emojiQuery // Unicode emojis.
-				: client.emojis.cache.find((emoji) =>
-					emoji == emojiQuery
-					|| emoji.id == emojiQuery
-					|| emoji.identifier == emojiQuery
-					|| emoji.name == emojiQuery
-				);
-			if (!emoji) {
-				return user.send(new MessageEmbed()
-					.setColor(client.colors.WARNING)
-					.setTitle('Emoji Not Found')
-					.setDescription(`The specified emoji, \`${emojiQuery}\`, could not be found.`)
-				);
-			}
+		const applyReactionRoles = () => {
+			if (reaction.message.author != client.user) { return; }
+			if (!reaction.message.embeds) { return; }
+			const embed = reaction.message.embeds[0];
+			if (embed.title != 'Role Reactions') { return; }
 
-			if (emoji != reaction.emoji) { return; }
+			reaction.users.remove(user);
 
-			const roleQuery = field.value.startsWith('<@&') && field.value.endsWith('>')
-				? field.value.substring('<@&'.length, field.value.length - '>'.length)
-				: field.value
-			const role = reaction.message.guild.roles.cache.find((role) =>
-				role == roleQuery
-				|| role.id == roleQuery
-				|| role.name == roleQuery
-			);
-			if (!role) {
-				return user.send(new MessageEmbed()
-					.setColor(client.colors.WARNING)
-					.setTitle('Role Not Found')
-					.setDescription(`The specified role, \`${roleQuery}\`, could not be found.`)
+			embed.fields.forEach((field) => {
+				const emojiQuery = field.name.startsWith('<:') && field.name.endsWith('>')
+					? field.name.substring('<:'.length, field.name.length - '>'.length)
+					: field.name;
+				const emoji = emojiQuery instanceof Emoji
+					? emojiQuery // Unicode emojis.
+					: client.emojis.cache.find((emoji) =>
+						emoji == emojiQuery
+						|| emoji.id == emojiQuery
+						|| emoji.identifier == emojiQuery
+						|| emoji.name == emojiQuery
+					);
+				if (!emoji) {
+					return user.send(new MessageEmbed()
+						.setColor(client.colors.WARNING)
+						.setTitle('Emoji Not Found')
+						.setDescription(`The specified emoji, \`${emojiQuery}\`, could not be found.`)
+					);
+				}
+
+				if (emoji != reaction.emoji) { return; }
+
+				const roleQuery = field.value.startsWith('<@&') && field.value.endsWith('>')
+					? field.value.substring('<@&'.length, field.value.length - '>'.length)
+					: field.value
+				const role = reaction.message.guild.roles.cache.find((role) =>
+					role == roleQuery
+					|| role.id == roleQuery
+					|| role.name == roleQuery
 				);
-			}
+				if (!role) {
+					return user.send(new MessageEmbed()
+						.setColor(client.colors.WARNING)
+						.setTitle('Role Not Found')
+						.setDescription(`The specified role, \`${roleQuery}\`, could not be found.`)
+					);
+				}
 
-			if (member.roles.cache.has(role.id)) {
-				member.roles.remove(role).catch((error) => console.log);
-			} else {
-				member.roles.add(role).catch((error) => console.log);
-			}
-		});
+				if (member.roles.cache.has(role.id)) {
+					member.roles.remove(role).catch((error) => console.log);
+				} else {
+					member.roles.add(role).catch((error) => console.log);
+				}
+			});
+		}
+
+		const addVotingReactions = () => {
+			const UPVOTE_IDENTIFIER = '%E2%9C%85';
+			const DOWNVOTE_IDENTIFIER = '%E2%9D%8E';
+
+			if (reaction.emoji.identifier != UPVOTE_IDENTIFIER && reaction.emoji.identifier != DOWNVOTE_IDENTIFIER) { return; }
+			if (reaction.message.author.bot) { return; }
+
+			reaction.message.react(UPVOTE_IDENTIFIER);
+			reaction.message.react(DOWNVOTE_IDENTIFIER);
+		}
+
+		applyReactionRoles();
+		addVotingReactions();
 	};
 
 	const onFetchMessage = () => {
-		if (reaction.message.author != client.user) { return; }
 		if (user.bot) { return; }
-		if (!reaction.message.embeds) { return; }
-
-		embed = reaction.message.embeds[0];
-		if (embed.title != 'Role Reactions') { return; }
-
-		reaction.users.remove(user);
 
 		const member = reaction.message.guild.members.cache.find((member) => member.user == user);
 		if (member.partial) {
@@ -196,6 +210,7 @@ client.on('message', (message) => {
 			if (match == null) { break; }
 			args.push(match[1] ? match[1] : match[0]);
 		}
+		if (!args.length) { return; }
 		const commandName = args.shift().toLowerCase();
 
 		// Ignore command names that don't start with a letter, since they're probably markdown.

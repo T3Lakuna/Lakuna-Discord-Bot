@@ -15,7 +15,7 @@ module.exports = {
 
 			return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(ms, 3)}`;
 		};
-
+		
 		return message.client.shard.fetchClientValues('guilds.cache.size')
 			.then((response) => message.channel.send(new MessageEmbed()
 				.setColor(message.client.colors.INFO)
@@ -27,10 +27,10 @@ module.exports = {
 				.addField('Shard Count', message.client.shard.count, true)
 				.addField('Uptime', formatTime(message.client.uptime), true)
 				.addField('User', `${message.client.user}`, true)
-				.addField('Source Code', client.urls.REPO, true)
-				.addField('Report an Issue', client.urls.ISSUE, true)
-				.addField('Website', client.urls.WEBSITE, true)
-				.addField('Support Server', client.urls.SUPPORT, true)
+				.addField('Source Code', message.client.urls.REPO, true)
+				.addField('Report an Issue', message.client.urls.ISSUE, true)
+				.addField('Website', message.client.urls.WEBSITE, true)
+				.addField('Support Server', message.client.urls.SUPPORT, true)
 			)).catch((error) => console.log);
 	}
 };
