@@ -4,6 +4,7 @@ module.exports = {
 	names: ['args', 'arguments', 'parameters'],
 	usage: 'ARGS [Argument 1] [Argument 2]...',
 	description: 'Prints arguments passed to the command.',
+	hidden: true,
 	execute: (message, args) => {
 		const embed = new MessageEmbed()
 			.setColor(message.client.colors.INFO)

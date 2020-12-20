@@ -9,7 +9,7 @@ module.exports = {
 			return message.channel.send(new MessageEmbed()
 					.setColor(message.client.colors.INFO)
 					.setTitle('View Types')
-					.setDescription('`activity`, `application`, `channel`, `activity`, `emoji`, `guild`, `activity`, `integration`, `invite`, `message`, `role`, `user`, `webhook`')
+					.setDescription('`activity`, `application`, `channel`, `activity`, `emoji`, `guild`, `activity`, `integration`, `invite`, `message`, `role`, `user`, `webhook`, `snowflake`, `date`')
 			);
 		}
 
@@ -152,6 +152,32 @@ module.exports = {
 						.setTitle('Unsupported')
 						.setDescription('Webhooks are currently unsupported by the view command.')
 				);
+			case "snowflake":
+				const snowflakeToBinary = (snowflake) => {
+					snowflake = BigInt(snowflake);
+					let output = '';
+					while (snowflake > 0) {
+						output = (snowflake % 2n) + output;
+						snowflake = snowflake / 2n;
+					}
+					while (output.length < 64) { output = 0 + output; }
+					return output;
+				};
+
+				const DISCORD_EPOCH = 1420070400000;
+				const snowflake = args.length > 1 ? args[1] : message.id;
+				const binarySnowflake = snowflakeToBinary(`${snowflake}`);
+				return message.channel.send(new MessageEmbed()
+					.setColor(message.client.colors.INFO)
+					.setTitle(`Snowflake: ${snowflake}`)
+					.addField('Timestamp', new Date(parseInt(binarySnowflake.substring(0, 42), 2) + DISCORD_EPOCH))
+					.addField('Worker', parseInt(binarySnowflake.substring(42, 47), 2), true)
+					.addField('Process', parseInt(binarySnowflake.substring(47, 52), 2), true)
+					.addField('Increment', parseInt(binarySnowflake.substring(52, 63), 2), true)
+					.setFooter(`Discord Epoch: ${DISCORD_EPOCH}`)
+				);
+			case "date":
+				break;
 			default:
 				return message.channel.send(new MessageEmbed()
 						.setColor(message.client.colors.WARNING)

@@ -21,7 +21,7 @@ module.exports = {
 		}
 
 		// List of commands.
-		for (command of message.client.commands) { embed.addField(`${command.names}`, command.description, true); }
+		for (command of message.client.commands.filter((command) => !command.hidden)) { embed.addField(`${command.names}`, command.description, true); }
 		return message.channel.send(embed).catch((error) => console.log);
 	}
 };

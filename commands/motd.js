@@ -1,4 +1,5 @@
 const { MessageEmbed } = require('discord.js');
+const DISCORD_EPOCH = 
 
 module.exports = {
 	names: ['motd'],

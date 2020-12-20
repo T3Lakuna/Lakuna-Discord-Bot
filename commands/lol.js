@@ -4,51 +4,62 @@ const request = require('bent')('GET', 'json', { 'X-Riot-Token': process.env.RIO
 module.exports = {
 	names: ['lol', 'league'],
 	usage: 'LOL (Region) (Username)',
-	description: 'Returns basic summoner stats and a live spectate file for a League of Legends account.',
+	description: 'Returns basic summoner stats and a live spectate command for a League of Legends account.',
 	execute: (message, args) => {
 		const regionQuery = args.shift().toLowerCase();
 		const summonerNameQuery = args.join(' ');
 
-		let region, spectatorRegion;
+		let region, spectatorRegion, opRegion;
 		if (regionQuery.includes('b')) {
 			region = 'br1'; // Brazil (BR / BR1)
 			spectatorRegion = 'br';
+			opRegion = 'br';
 		} else if (regionQuery.includes('eu') || regionQuery.includes('nordic')) {
 			if (regionQuery.includes('w')) {
 				region = 'euw1'; // Europe West (EUW / EUW1)
 				spectatorRegion = 'euw1';
+				opRegion = 'euw';
 			} else {
 				region = 'eun1'; // Europe Nordic & East (EUNE / EUN1)
 				spectatorRegion = 'eu';
+				opRegion = 'eune';
 			}
 		} else if (regionQuery.includes('la')) {
 			if (regionQuery.includes('n') || regionQuery.includes('1')) {
 				region = 'la1'; // Latin America North (LAN / LA1)
 				spectatorRegion = 'la1';
+				opRegion = 'lan';
 			} else {
 				region = 'la2'; // Latin America South (LAS / LA2)
 				spectatorRegion = 'la2';
+				opRegion = 'las';
 			}
 		} else if (regionQuery.includes('oc')) {
 			region = 'oc1'; // Oceania (OCE / OC1)
 			spectatorRegion = 'oc1';
+			opRegion = 'oce';
 		} else if (regionQuery.includes('ru')) {
 			region = 'ru'; // Russia (RU / RU1)
 			spectatorRegion = 'ru';
+			opRegion = 'ru';
 		} else if (regionQuery.includes('tu') || regionQuery.includes('tr')) {
 			region = 'tr1'; // Turkey (TR / TR1)
 			spectatorRegion = 'tr';
+			opRegion = 'tr';
 		} else if (regionQuery.includes('j')) {
 			region = 'jp1'; // Japan (JP / JP1)
 			spectatorRegion = 'jp1';
+			opRegion = 'jp';
 		} else if (regionQuery.includes('k')) {
 			region = 'kr'; // Republic of Korea (KR)
 			spectatorRegion = 'kr';
+			opRegion = '';
 		} else if (regionQuery.includes('public') || regionQuery.includes('beta') || regionQuery == 'pbe') {
 			region = 'pbe'; // Public Beta Environment (PBE)
 		} else {
 			region = 'na1'; // North America (NA / NA1)
 			spectatorRegion = 'na';
+			opRegion = 'na';
 		}
 
 		let summoner, ddragonVersion;
@@ -74,7 +85,7 @@ module.exports = {
 
 					embed
 							.setTitle(`Stats for ${summonerName}`)
-							.setURL(`https://op.gg/summoner/userName=${summonerName.replace(/ /g, '%20')}`);
+							.setURL(`https://${opRegion}.op.gg/summoner/userName=${summonerName.replace(/ /g, '%20')}`);
 
 					const ranked = response.find((leagueEntry) => leagueEntry.queueType == 'RANKED_SOLO_5x5');
 					if (ranked) {
