@@ -1,26 +1,43 @@
 const { MessageEmbed } = require('discord.js');
 
 const DISCORD_EPOCH = 1420070400000;
+
 const TIMESTAMP_BITS = 42;
 const WORKER_BITS = 5;
 const PROCESS_BITS = 5;
 const INCREMENT_BITS = 12;
 
-const snowflakeToBinary = (snowflake) => {
+const parsedSnowflake = (snowflake) => {
+	const original = snowflake;
+
+	// Convert string to BigInt, since snowflakes are 64-bit.
 	snowflake = BigInt(snowflake);
-	let output = '';
+	
+	// Convert BigInt to binary string.
+	let binary = '';
 	while (snowflake > 0) {
-		output = (snowflake % 2n) + output;
+		binary = (snowflake % 2n) + binary;
 		snowflake = snowflake / 2n;
 	}
-	while (output.length < TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS + INCREMENT_BITS) {
-		output = 0 + output;
+	while (binary.length < TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS + INCREMENT_BITS) {
+		binary = 0 + binary;
 	}
-	return output;
+	
+	// Split string into parts and revert to decimal.
+	return {
+		full: original,
+		timestamp: new Date(parseInt(binary.substring(0, TIMESTAMP_BITS), 2) + DISCORD_EPOCH),
+		worker: parseInt(binary.substring(TIMESTAMP_BITS, TIMESTAMP_BITS + WORKER_BITS), 2),
+		process: parseInt(binary.substring(TIMESTAMP_BITS + WORKER_BITS, TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS), 2),
+		increment: parseInt(binary.substring(TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS), 2)
+	};
 };
 
 const dateToSnowflake = (date) => {
+	// Convert date to BigInt to work with 64-bit snowflakes, and subtract the Discord epoch.
 	date = BigInt(date.getTime() - DISCORD_EPOCH);
+	
+	// Convert date to binary, and fill other sections with zeros.
 	let output = '';
 	while (date > 0) {
 		output = (date % 2n) + output;
@@ -32,9 +49,9 @@ const dateToSnowflake = (date) => {
 	for (let i = 0; i < WORKER_BITS + PROCESS_BITS + INCREMENT_BITS; i++) {
 		output += '0';
 	}
-	console.log(`Binary: ${output}`); // TODO: Delete.
-	output = BigInt(`0b${output}`);
-	return output;
+	
+	// Convert back to decimal and return a BigInt.
+	return `${BigInt(`0b${output}`)}`;
 };
 
 module.exports = {
@@ -178,15 +195,14 @@ module.exports = {
 						.setDescription('Webhooks are currently unsupported by the view command.')
 				);
 			case "snowflake":
-				const snowflake = args.length > 1 ? args[1] : message.id;
-				const binarySnowflake = snowflakeToBinary(`${snowflake}`);
+				const snowflake = parsedSnowflake(args.length > 1 ? args[1] : message.id);
 				return message.channel.send(new MessageEmbed()
 					.setColor(message.client.colors.INFO)
-					.setTitle(`Snowflake: ${snowflake}`)
-					.addField('Timestamp', new Date(parseInt(binarySnowflake.substring(0, TIMESTAMP_BITS), 2) + DISCORD_EPOCH))
-					.addField('Worker', parseInt(binarySnowflake.substring(TIMESTAMP_BITS, TIMESTAMP_BITS + WORKER_BITS), 2), true)
-					.addField('Process', parseInt(binarySnowflake.substring(TIMESTAMP_BITS + WORKER_BITS, TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS), 2), true)
-					.addField('Increment', parseInt(binarySnowflake.substring(TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS), 2), true)
+					.setTitle(`Snowflake: ${snowflake.full}`)
+					.addField('Timestamp', snowflake.timestamp)
+					.addField('Worker', snowflake.worker, true)
+					.addField('Process', snowflake.process, true)
+					.addField('Increment', snowflake.increment, true)
 					.setFooter(`Discord Epoch: ${DISCORD_EPOCH}`)
 				);
 			case "date":
@@ -199,10 +215,7 @@ module.exports = {
 							.setDescription(`"${dateString}" does not properly resolve to a date.`)
 					);
 				}
-
-				console.log(date);
-
-				// WIP
+				
 				return message.channel.send(new MessageEmbed()
 					.setColor(message.client.colors.INFO)
 					.setTitle(`Date: ${date}`)
