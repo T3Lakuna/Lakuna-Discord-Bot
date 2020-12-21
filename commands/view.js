@@ -1,5 +1,24 @@
 const { MessageEmbed } = require('discord.js');
 
+const DISCORD_EPOCH = 1420070400000;
+const TIMESTAMP_BITS = 42;
+const WORKER_BITS = 5;
+const PROCESS_BITS = 5;
+const INCREMENT_BITS = 12;
+
+const snowflakeToBinary = (snowflake) => {
+	snowflake = BigInt(snowflake);
+	let output = '';
+	while (snowflake > 0) {
+		output = (snowflake % 2n) + output;
+		snowflake = snowflake / 2n;
+	}
+	while (output.length < TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS + INCREMENT_BITS) {
+		output = 0 + output;
+	}
+	return output;
+};
+
 module.exports = {
 	names: ['view', 'v'],
 	usage: 'VIEW [Type] [Query]',
@@ -153,31 +172,34 @@ module.exports = {
 						.setDescription('Webhooks are currently unsupported by the view command.')
 				);
 			case "snowflake":
-				const snowflakeToBinary = (snowflake) => {
-					snowflake = BigInt(snowflake);
-					let output = '';
-					while (snowflake > 0) {
-						output = (snowflake % 2n) + output;
-						snowflake = snowflake / 2n;
-					}
-					while (output.length < 64) { output = 0 + output; }
-					return output;
-				};
-
-				const DISCORD_EPOCH = 1420070400000;
 				const snowflake = args.length > 1 ? args[1] : message.id;
 				const binarySnowflake = snowflakeToBinary(`${snowflake}`);
 				return message.channel.send(new MessageEmbed()
 					.setColor(message.client.colors.INFO)
 					.setTitle(`Snowflake: ${snowflake}`)
-					.addField('Timestamp', new Date(parseInt(binarySnowflake.substring(0, 42), 2) + DISCORD_EPOCH))
-					.addField('Worker', parseInt(binarySnowflake.substring(42, 47), 2), true)
-					.addField('Process', parseInt(binarySnowflake.substring(47, 52), 2), true)
-					.addField('Increment', parseInt(binarySnowflake.substring(52, 63), 2), true)
+					.addField('Timestamp', new Date(parseInt(binarySnowflake.substring(0, TIMESTAMP_BITS), 2) + DISCORD_EPOCH))
+					.addField('Worker', parseInt(binarySnowflake.substring(TIMESTAMP_BITS, TIMESTAMP_BITS + WORKER_BITS), 2), true)
+					.addField('Process', parseInt(binarySnowflake.substring(TIMESTAMP_BITS + WORKER_BITS, TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS), 2), true)
+					.addField('Increment', parseInt(binarySnowflake.substring(TIMESTAMP_BITS + WORKER_BITS + PROCESS_BITS), 2), true)
 					.setFooter(`Discord Epoch: ${DISCORD_EPOCH}`)
 				);
 			case "date":
-				break;
+				const dateString = args.slice(1).join(' ');
+				const date = args.length > 1 ? new Date(dateString) : new Date();
+				if (isNaN(date.getTime())) {
+					return message.channel.send(new MessageEmbed()
+							.setColor(message.client.colors.WARNING)
+							.setTitle(`Invalid Date`)
+							.setDescription(`"${dateString}" does not properly resolve to a date.`)
+					);
+				}
+
+				// WIP
+				return message.channel.send(new MessageEmbed()
+					.setColor(message.client.colors.INFO)
+					.setTitle(`Date: ${date}`)
+					.addField('Snowflake', date.getTime() - DISCORD_EPOCH, true)
+				);
 			default:
 				return message.channel.send(new MessageEmbed()
 						.setColor(message.client.colors.WARNING)
