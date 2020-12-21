@@ -19,6 +19,24 @@ const snowflakeToBinary = (snowflake) => {
 	return output;
 };
 
+const dateToSnowflake = (date) => {
+	date = BigInt(date.getTime() - DISCORD_EPOCH);
+	let output = '';
+	while (date > 0) {
+		output = (date % 2n) + output;
+		date = date / 2n;
+	}
+	while (output.length < TIMESTAMP_BITS) {
+		output = 0 + output;
+	}
+	for (let i = 0; i < WORKER_BITS + PROCESS_BITS + INCREMENT_BITS; i++) {
+		output += '0';
+	}
+	console.log(`Binary: ${output}`); // TODO: Delete.
+	output = BigInt(`0b${output}`);
+	return output;
+};
+
 module.exports = {
 	names: ['view', 'v'],
 	usage: 'VIEW [Type] [Query]',
@@ -28,7 +46,7 @@ module.exports = {
 			return message.channel.send(new MessageEmbed()
 					.setColor(message.client.colors.INFO)
 					.setTitle('View Types')
-					.setDescription('`activity`, `application`, `channel`, `activity`, `emoji`, `guild`, `activity`, `integration`, `invite`, `message`, `role`, `user`, `webhook`, `snowflake`, `date`')
+					.setDescription('`activity`, `application`, `channel`, `emoji`, `guild`, `integration`, `invite`, `message`, `role`, `user`, `webhook`, `snowflake`, `date`')
 			);
 		}
 
@@ -52,12 +70,6 @@ module.exports = {
 						.setColor(message.client.colors.WARNING)
 						.setTitle('Unsupported')
 						.setDescription('Channels are currently unsupported by the view command.')
-				);
-			case "activity":
-				return message.channel.send(new MessageEmbed()
-						.setColor(message.client.colors.WARNING)
-						.setTitle('Unsupported')
-						.setDescription('Activities are currently unsupported by the view command.')
 				);
 			case "emote":
 			case "emoji":
@@ -126,12 +138,6 @@ module.exports = {
 						.setTitle('Unsupported')
 						.setDescription('Guilds are currently unsupported by the view command.')
 				);
-			case "activity":
-				return message.channel.send(new MessageEmbed()
-						.setColor(message.client.colors.WARNING)
-						.setTitle('Unsupported')
-						.setDescription('Activities are currently unsupported by the view command.')
-				);
 			case "integration":
 				return message.channel.send(new MessageEmbed()
 						.setColor(message.client.colors.WARNING)
@@ -194,11 +200,14 @@ module.exports = {
 					);
 				}
 
+				console.log(date);
+
 				// WIP
 				return message.channel.send(new MessageEmbed()
 					.setColor(message.client.colors.INFO)
 					.setTitle(`Date: ${date}`)
-					.addField('Snowflake', date.getTime() - DISCORD_EPOCH, true)
+					.addField('Snowflake', dateToSnowflake(date), true)
+					.setFooter(`Discord Epoch: ${DISCORD_EPOCH}`)
 				);
 			default:
 				return message.channel.send(new MessageEmbed()
