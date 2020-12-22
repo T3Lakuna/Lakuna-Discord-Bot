@@ -35,13 +35,41 @@ module.exports = {
 	usage: 'MOTD',
 	description: 'Gets the best-voted meme posted in this server in the past day.',
 	execute: (message, args) => new Promise((resolve, reject) => {
+		const getAllMessagesSince = (channel, snowflake, output = []) => new Promise((resolve, reject) => {
+			channel.messages.fetch({ limit: 100, before: output.length ? Math.min(...output.map((message) => message.id)) : message.id }, false)
+					.then((messages) => {
+						messages = Array.from(messages.values());
+						for (const message of messages) {
+							if (message.id >= snowflake) {
+								output.push(message);
+							} else {
+								break;
+							}
+						}
+
+						if (!output.length) {
+							return resolve([]);
+						}
+
+						if (output.length % 100 == 0) {
+							return getAllMessagesSince(channel, snowflake, output).then((messages) => resolve(messages));
+						}
+
+						return resolve(output);
+					})
+					.catch((error) => resolve([])); // Missing permissions; ignore channel.
+		});
+
 		let output = [];
 		let fetched = 0;
-		const channels = Array.from(message.guild.channels.cache.values()).filter((channel) => channel.type == 'text');
+		const channels = Array.from(message.guild.channels.cache.values()).filter((channel) =>
+				channel.type == 'text'
+				&& channel.guild.me.permissionsIn(channel).has('VIEW_CHANNEL')
+		);
 		for (const channel of channels) {
-			channel.messages.fetch({ limit: 100, after: dateToSnowflake(new Date(new Date() - DAY_LENGTH)) }, false)
-					.then((messages) => output = output.concat(Array.from(messages.values())))
-					.catch((error) => { }) // Missing permisions; ignore channel.
+			getAllMessagesSince(channel, dateToSnowflake(new Date(new Date() - DAY_LENGTH)))
+					.then((messages) => output = output.concat(messages))
+					.catch((error) => console.error(error))
 					.finally(() => {
 						fetched++;
 						if (fetched >= channels.length) { resolve(output); }
@@ -49,8 +77,70 @@ module.exports = {
 		}
 	})
 	.then((messages) => {
-		// TODO
-		console.log(`Got ${messages.length} messages.`);
+		let bestMeme;
+		for (const message of messages) {
+			const upvoteReaction = message.reactions.cache.find((reaction) => reaction.emoji.identifier == message.client.UPVOTE_IDENTIFIER);
+			const upvotes = upvoteReaction ? upvoteReaction.count : 0;
+
+			const downvoteReaction = message.reactions.cache.find((reaction) => reaction.emoji.identifier == message.client.DOWNVOTE_IDENTIFIER);
+			const downvotes = downvoteReaction ? downvoteReaction.count : 0;
+
+			const meme = {
+				message: message,
+				score: upvotes - downvotes
+			};
+
+			if (!bestMeme || bestMeme.score < meme.score) {
+				bestMeme = meme;
+			}
+		}
+
+		if (!bestMeme) {
+			return message.channel.send(new MessageEmbed()
+					.setColor(message.client.colors.WARNING)
+					.setTitle('Failed to find any candidates.')
+			);
+		}
+
+		// Build MotD message.
+		const output = new MessageEmbed()
+				.setColor(message.client.colors.INFO)
+				.setTitle(`Meme of the Day ${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`)
+				.setDescription(bestMeme.message.content)
+				.setURL(bestMeme.message.url)
+				.addField('Author', `${bestMeme.message.author}`, true)
+				.addField('Score', bestMeme.score, true);
+
+		// Get message attachments...
+		const attachments = [];
+
+		// ...from the text.
+		for (const word of bestMeme.message.content.split(/ +/)) {
+			if (word.startsWith('http')) { attachments.push(word); }
+		}
+
+		// ...from attachments.
+		for (const attachment of bestMeme.message.attachments.values()) {
+			attachments.push(attachment.url);
+		}
+
+		// Add attachments to message.
+		if (attachments.length == 1) {
+			if (
+				attachments[0].endsWith('.png')
+				|| attachments[0].endsWith('.jpg')
+				|| attachments[0].endsWith('.jpeg')
+				|| attachments[0].endsWith('.gif')
+			) {
+				output.setImage(attachments[0]);
+			} else {
+				output.attachFiles(attachments);
+			}
+		} else {
+			output.attachFiles(attachments);
+		}
+
+		return message.channel.send(output);
 	})
 	.catch((error) => console.error(error))
 };

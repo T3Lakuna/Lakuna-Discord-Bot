@@ -9,6 +9,8 @@ const client = new Client({
 
 // Constants.
 client.PREFIX = '~';
+client.UPVOTE_IDENTIFIER = '%E2%9C%85'; // :white_check_mark:
+client.DOWNVOTE_IDENTIFIER = '%E2%9D%8E'; // :negative_squared_cross_mark:
 client.colors = { SUCCESS: '#32CD32', WARNING: '#FDEE00', ERROR: '#FF2400', INFO: '#007FFF' };
 client.urls = {
 	REPO: 'https://bot.lakuna.pw/r/repository',
@@ -162,14 +164,11 @@ client.on('messageReactionAdd', (reaction, user) => {
 		}
 
 		const addVotingReactions = () => {
-			const UPVOTE_IDENTIFIER = '%E2%9C%85';
-			const DOWNVOTE_IDENTIFIER = '%E2%9D%8E';
-
-			if (reaction.emoji.identifier != UPVOTE_IDENTIFIER && reaction.emoji.identifier != DOWNVOTE_IDENTIFIER) { return; }
+			if (reaction.emoji.identifier != client.UPVOTE_IDENTIFIER && reaction.emoji.identifier != client.DOWNVOTE_IDENTIFIER) { return; }
 			if (reaction.message.author.bot) { return; }
 
-			reaction.message.react(UPVOTE_IDENTIFIER);
-			reaction.message.react(DOWNVOTE_IDENTIFIER);
+			reaction.message.react(client.UPVOTE_IDENTIFIER);
+			reaction.message.react(client.DOWNVOTE_IDENTIFIER);
 		}
 
 		applyReactionRoles();
