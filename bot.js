@@ -37,7 +37,7 @@ client.on('ready', () => {
 	client.guilds.cache.forEach((guild) => {
 		guild.fetchInvites()
 			.then((invites) => client.cachedInvites.set(guild.id, invites))
-			.catch((error) => console.log);
+			.catch((error) => console.error(error));
 	});
 
 	client.user.setActivity(`${client.PREFIX}help`);
@@ -47,7 +47,7 @@ client.on('guildCreate', (guild) => {
 	if (!guild.systemChannel) { return; }
 	guild.fetchInvites()
 		.then((invites) => client.cachedInvites.set(guild.id, invites))
-		.catch((error) => console.log);
+		.catch((error) => console.error(error));
 
 	guild.systemChannel.send(new MessageEmbed()
 		.setColor(client.colors.INFO)
@@ -61,7 +61,7 @@ client.on('guildCreate', (guild) => {
 		.addField('Report an Issue', client.urls.ISSUE)
 		.addField('Website', client.urls.WEBSITE)
 		.addField('Support Server', client.urls.SUPPORT)
-	).catch((error) => console.log);
+	).catch((error) => console.error(error));
 });
 
 client.on('guildMemberAdd', (member) => {
@@ -77,9 +77,9 @@ client.on('guildMemberAdd', (member) => {
 			client.cachedInvites.set(member.guild.id, invites);
 			const newInvites = client.cachedInvites.get(member.guild.id);
 			const usedInvite = newInvites.find((invite) => oldInvites.get(invite.code).uses < invite.uses);
-			member.guild.systemChannel.send(embed.addField('Invite', usedInvite.code).addField('Inviter', usedInvite.inviter)).catch((error) => console.log);
+			member.guild.systemChannel.send(embed.addField('Invite', usedInvite.code).addField('Inviter', usedInvite.inviter)).catch((error) => console.error(error));
 		})
-		.catch((error) => member.guild.systemChannel.send(embed).catch((error) => console.log));
+		.catch((error) => member.guild.systemChannel.send(embed).catch((error) => console.error(error)));
 });
 
 client.on('guildMemberRemove', (member) => {
@@ -89,19 +89,19 @@ client.on('guildMemberRemove', (member) => {
 		.setTitle('Member Left Guild')
 		.setDescription(`${member} has left the guild.`)
 		.setThumbnail(member.user.displayAvatarURL())
-	).catch((error) => console.log);
+	).catch((error) => console.error(error));
 });
 
 client.on('inviteCreate', (invite) => {
 	invite.guild.fetchInvites()
 		.then((invites) => client.cachedInvites.set(invite.guild.id, invites))
-		.catch((error) => console.log);
+		.catch((error) => console.error(error));
 });
 
 client.on('inviteDelete', (invite) => {
 	invite.guild.fetchInvites()
 		.then((invites) => client.cachedInvites.set(invite.guild.id, invites))
-		.catch((error) => console.log);
+		.catch((error) => console.error(error));
 });
 
 // Called once message is fetched if it's partial, or right away otherwise.
@@ -154,9 +154,9 @@ client.on('messageReactionAdd', (reaction, user) => {
 				}
 
 				if (member.roles.cache.has(role.id)) {
-					member.roles.remove(role).catch((error) => console.log);
+					member.roles.remove(role).catch((error) => console.error(error));
 				} else {
-					member.roles.add(role).catch((error) => console.log);
+					member.roles.add(role).catch((error) => console.error(error));
 				}
 			});
 		}
@@ -183,7 +183,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 		if (member.partial) {
 			member.fetch()
 				.then(() => onFetchMember(member))
-				.catch((error) => console.log)
+				.catch((error) => console.error(error))
 		} else {
 			onFetchMember(member);
 		}
@@ -192,7 +192,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 	if (reaction.message.partial) {
 		reaction.message.fetch()
 			.then(() => onFetchMessage())
-			.catch((error) => console.log);
+			.catch((error) => console.error(error));
 	} else {
 		onFetchMessage();
 	}
@@ -222,7 +222,7 @@ client.on('message', (message) => {
 				.setColor(client.colors.WARNING)
 				.setTitle('Unknown Command')
 				.setDescription(`Unknown command. Use \`${client.PREFIX}help\` to get a list of commands.`)
-			).catch((error) => console.log);
+			).catch((error) => console.error(error));
 		}
 
 		// Check argument count.
@@ -235,7 +235,7 @@ client.on('message', (message) => {
 					.setDescription('The command you tried to execute requires more arguments.')
 					.addField('Expected Arguments', numExpectedArgs)
 					.addField('Supplied Arguments', args.length)
-				).catch((error) => console.log);
+				).catch((error) => console.error(error));
 			}
 		}
 
@@ -249,10 +249,10 @@ client.on('message', (message) => {
 				.addField('Error Message', `${error}`)
 				.addField('Support Server', client.urls.SUPPORT)
 				.addField('Report an Issue', client.urls.ISSUE)
-			).catch((error) => console.log);
+			).catch((error) => console.error(error));
 		}
 
-		message.delete().catch((error) => console.log);
+		message.delete().catch((error) => console.error(error));
 	}
 
 	if (message.author.bot) { return; }
@@ -267,7 +267,7 @@ client.on('message', (message) => {
 			.addField('Report an Issue', client.urls.ISSUE)
 			.addField('Website', client.urls.WEBSITE)
 			.addField('Support Server', client.urls.SUPPORT)
-		).catch((error) => console.log);
+		).catch((error) => console.error(error));
 	}
 });
 
