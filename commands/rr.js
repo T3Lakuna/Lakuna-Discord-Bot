@@ -65,6 +65,6 @@ module.exports = {
 
 		return message.channel.send(embed)
 			.then((message) => reactions.forEach((emoji) => message.react(emoji)))
-			.catch((error) => console.log);
+			.catch((error) => console.error(error));
 	}
 };

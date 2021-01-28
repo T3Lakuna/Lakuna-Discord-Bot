@@ -134,7 +134,7 @@ module.exports = {
 						})
 						.then((reactions) => {
 							if (reactions.size) {
-								reactionMessage.delete().catch((error) => console.log);
+								reactionMessage.delete().catch((error) => console.error(error));
 								return message.channel.send(embedify(reactions.first().emoji));
 							}
 

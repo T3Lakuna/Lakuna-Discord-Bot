@@ -16,6 +16,6 @@ module.exports = {
 				.setTitle('Invite')
 				.setURL(invite)
 			))
-			.catch((error) => console.log)
+			.catch((error) => console.error(error))
 	}
 };

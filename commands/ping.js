@@ -11,6 +11,6 @@ module.exports = {
 			.setTitle('Pong!')
 			.addField('Client', `${new Date() - message.createdAt}ms`, true)
 			.addField('API', `${Math.round(message.client.ws.ping)}ms`, true)
-		).catch((error) => console.log);
+		).catch((error) => console.error(error));
 	}
 };

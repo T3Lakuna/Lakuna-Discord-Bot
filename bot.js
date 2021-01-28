@@ -25,13 +25,13 @@ client.cachedInvites = new Map();
 // Load commands.
 client.commands = [];
 fs.readdir('./commands/', (error, fileNames) => {
-	if (error) { return console.log(error); }
+	if (error) { return console.error(error); }
 	for (fileName of fileNames.filter((fileName) => fileName.endsWith('.js'))) { client.commands.push(require(`./commands/${fileName}`)); }
 });
 
 // Log errors.
-client.on('error', (error) => console.log);
-client.on('shardError', (error) => console.log);
+client.on('error', (error) => console.error(error));
+client.on('shardError', (error) => console.error(error));
 
 client.on('ready', () => {
 	console.log('Ready.');

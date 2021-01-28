@@ -17,11 +17,11 @@ module.exports = {
 				.setDescription(command.description)
 				.addField('Aliases', `${command.names}`)
 				.addField('Usage', command.usage)
-			).catch((error) => console.log);
+			).catch((error) => console.error(error));
 		}
 
 		// List of commands.
 		for (command of message.client.commands.filter((command) => !command.hidden)) { embed.addField(`${command.names}`, command.description, true); }
-		return message.channel.send(embed).catch((error) => console.log);
+		return message.channel.send(embed).catch((error) => console.error(error));
 	}
 };

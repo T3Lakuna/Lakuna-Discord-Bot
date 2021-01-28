@@ -11,6 +11,6 @@ module.exports = {
 			.setDescription('Arguments passed to command:')
 			.setTitle('Arguments');
 		for (let i = 0; i < args.length; i++) { embed.addField(`Argument #${i + 1}`, args[i], true); }
-		return message.channel.send(embed).catch((error) => console.log);
+		return message.channel.send(embed).catch((error) => console.error(error));
 	}
 };
