@@ -54,6 +54,30 @@ const dateToSnowflake = (date) => {
 	return `${BigInt(`0b${output}`)}`;
 };
 
+const getPerson = (message, query) => {
+	query = query.startsWith('<@!') && query.endsWith('>') ? query.substring('<@!'.length, query.length - '>'.length) : query;
+
+	const member = message.guild.members.cache.find((member) =>
+		member == query
+		|| member.displayName == query
+		|| member.id == query
+		|| member.nickname == query
+		|| member.user == query
+		|| member.user.id == query
+		|| member.user.tag == query
+		|| member.user.username == query
+	);
+
+	const user = member ? member.user : message.client.users.cache.find((user) =>
+		user == query
+		|| user.id == query
+		|| user.tag == query
+		|| user.username == query
+	);
+
+	return { member: member, user: user };
+};
+
 module.exports = {
 	names: ['view', 'v'],
 	usage: 'VIEW [Type] [Query]',
@@ -63,7 +87,7 @@ module.exports = {
 			return message.channel.send(new MessageEmbed()
 					.setColor(message.client.colors.INFO)
 					.setTitle('View Types')
-					.setDescription('`activity`, `application`, `channel`, `emoji`, `guild`, `integration`, `invite`, `message`, `role`, `user`, `webhook`, `snowflake`, `date`')
+					.setDescription('`activity`, `application`, `channel`, `emoji`, `guild`, `integration`, `invite`, `message`, `role`, `user`, `webhook`, `snowflake`, `date`, `voice`, `presence`, `roles`')
 			);
 		}
 
@@ -94,18 +118,20 @@ module.exports = {
 					const embed = new MessageEmbed()
 							.setColor(message.client.colors.INFO)
 							.setTitle(`Emoji: ${emoji}`)
-							.addField('Identifier', emoji.identifier)
-							.addField('Name', emoji.name);
+							.addField('Identifier', `${emoji.identifier}`, true)
+							.addField('Name', `${emoji.name}`, true)
+							.addField('Animated', `${emoji.animated}`, true)
+							.addField('Deleted', `${emoji.deleted}`, true)
 
-					if (emoji.animated) { embed.addField('Animated', emoji.animated, true); }
-					if (emoji.id) { embed.addField('ID', emoji.id, true); }
-					if (emoji.createdAt) { embed.addField('Created At', emoji.createdAt.toISOString(), true); }
-					if (emoji.deleted) { embed.addField('Deleted', emoji.deleted, true); }
-					if (emoji.author) { embed.addField('Author', `${emoji.author}`, true); }
-					if (emoji.guild) { embed.addField('Guild', `${emoji.guild}`, true); }
-					if (emoji.managed) { embed.addField('Managed', `${emoji.managed}`, true); }
-					if (emoji.requiresColons) { embed.addField('Requires Colons', emoji.requiresColons, true); }
+					if (emoji.createdAt) { embed.addField('Created At', `${emoji.createdAt.toISOString()}`, true); }
+					if (emoji.id) { embed.addField('ID', `${emoji.id}`, true); }
 					if (emoji.url) { embed.setThumbnail(emoji.url); }
+					if (emoji.author) { embed.addField('Author', `${emoji.author}`, true); }
+					if (typeof emoji.available == 'boolean') { embed.addField('Available', `${emoji.available}`, true); }
+					if (typeof emoji.deletable == 'boolean') { embed.addField('Deletable', `${emoji.deletable}`, true); }
+					if (emoji.guild) { embed.addField('Guild', `${emoji.guild}`, true); }
+					if (typeof emoji.managed == 'boolean') { embed.addField('Managed', `${emoji.managed}`, true); }
+					if (typeof emoji.requiresColons == 'boolean') { embed.addField('Requires Colons', `${emoji.requiresColons}`, true); }
 
 					return embed;
 				};
@@ -183,11 +209,51 @@ module.exports = {
 				);
 			case "member":
 			case "user":
-				return message.channel.send(new MessageEmbed()
-						.setColor(message.client.colors.WARNING)
-						.setTitle('Unsupported')
-						.setDescription('Users are currently unsupported by the view command.')
-				);
+				const query = args.length > 1 ? args[1] : message.author.id;
+				const person = getPerson(message, query);
+
+				if (!person || !person.member && !person.user) {
+					return message.channel.send(new MessageEmbed()
+							.setColor(message.client.colors.WARNING)
+							.setTitle('User not Found')
+							.setDescription(`I was unable to find a user based on your query "${query}". Note that this command uses the bot's cache to function, so the user might have to send a message before you can view them.`)
+					);
+				}
+
+				const embed = new MessageEmbed()
+						.setColor(message.client.colors.INFO)
+						.setTitle(person.member ? `Member ${person.member}` : `User ${person.user}`)
+						.addField('Bot', `${person.user.bot}`, true)
+						.addField('Created At', `${person.user.createdAt}`)
+						.addField('ID', `${person.user.id}`, true)
+						.addField('Partial', `${person.user.partial}`, true)
+						.setThumbnail(person.user.displayAvatarURL({ dynamic: true }));
+
+				if (person.user.discriminator) { embed.addField('Discriminator', `${person.user.discriminator}`, true); }
+				if (person.user.dmChannel) { embed.addField('DM Channel', `${person.user.dmChannel}`, true); }
+				if (person.user.flags) { embed.addField('Flags', `${person.user.flags.toArray()}`, true); }
+				if (person.user.lastMessage) { embed.addField('Last Message', `${person.user.lastMessageChannelID}/${person.user.lastMessageID}`, true); }
+				if (person.user.locale) { embed.addField('Locale (ISO 639-1)', `${person.user.locale}`, true); }
+				if (typeof person.user.system == 'boolean') { embed.addField('System Account', `${person.user.system}`, true); }
+				if (person.user.tag) { embed.addField('Tag', `${person.user.tag}`, true); }
+				if (person.user.username) { embed.addField('Username', `${person.user.username}`, true); }
+
+				if (person.member) {
+					embed
+							.addField('Member', `${person.member}`, true)
+							.addField('Management', `Bannable: ${person.member.bannable} | Kickable: ${person.member.kickable} | Manageable: ${person.member.manageable}`)
+							.addField('Deleted', `${person.member.deleted}`, true)
+							.addField('Display Color', `${person.member.displayColor} | ${person.member.displayHexColor}`, true)
+							.addField('Permissions', `${Array.from(person.member.permissions)}`);
+
+					if (person.member.displayName) { embed.addField('Display Name', `${person.member.displayName}`, true); }
+					if (person.member.guild) { embed.addField('Guild', `${person.member.guild}`, true); }
+					if (person.member.joinedAt) { embed.addField('Joined At', `${person.member.joinedAt.toISOString()}`); }
+					if (person.member.nickname) { embed.addField('Nickname', `${person.member.nickname}`, true); }
+					if (person.member.premiumSince) { embed.addField('Premium Since', `${person.member.premiumSince.toISOString()}`); }
+				}
+
+				return message.channel.send(embed);
 			case "webhook":
 				return message.channel.send(new MessageEmbed()
 						.setColor(message.client.colors.WARNING)
@@ -220,7 +286,26 @@ module.exports = {
 					.setColor(message.client.colors.INFO)
 					.setTitle(`Date: ${date}`)
 					.addField('Snowflake', dateToSnowflake(date), true)
+					.addField('ISO 8601 Format', date.toISOString(), true)
 					.setFooter(`Discord Epoch: ${DISCORD_EPOCH}`)
+				);
+			case "voice":
+				return message.channel.send(new MessageEmbed()
+						.setColor(message.client.colors.WARNING)
+						.setTitle('Unsupported')
+						.setDescription('Voice states are currently unsupported by the view command.')
+				);
+			case "presence":
+				return message.channel.send(new MessageEmbed()
+						.setColor(message.client.colors.WARNING)
+						.setTitle('Unsupported')
+						.setDescription('User presences are currently unsupported by the view command.')
+				);
+			case "roles":
+				return message.channel.send(new MessageEmbed()
+						.setColor(message.client.colors.WARNING)
+						.setTitle('Unsupported')
+						.setDescription('User roles are currently unsupported by the view command.')
 				);
 			default:
 				return message.channel.send(new MessageEmbed()
