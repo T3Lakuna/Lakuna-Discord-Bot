@@ -23,10 +23,8 @@
   },
   "homepage": "https://github.com/T3Lakuna/Lakuna-Discord-Bot#readme",
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
     "bent": "^7.3.12",
     "discord.js": "^12.4.1",
-    "dotenv": "^8.2.0",
-    "pg": "^8.4.2"
+    "dotenv": "^8.2.0"
   }
 }

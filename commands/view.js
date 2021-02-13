@@ -125,7 +125,7 @@ module.exports = {
 
 					if (emoji.createdAt) { embed.addField('Created At', `${emoji.createdAt.toISOString()}`, true); }
 					if (emoji.id) { embed.addField('ID', `${emoji.id}`, true); }
-					if (emoji.url) { embed.setThumbnail(emoji.url); }
+					if (emoji.url) { embed.setThumbnail(`${emoji.url}`); }
 					if (emoji.author) { embed.addField('Author', `${emoji.author}`, true); }
 					if (typeof emoji.available == 'boolean') { embed.addField('Available', `${emoji.available}`, true); }
 					if (typeof emoji.deletable == 'boolean') { embed.addField('Deletable', `${emoji.deletable}`, true); }
@@ -229,14 +229,30 @@ module.exports = {
 						.addField('Partial', `${person.user.partial}`, true)
 						.setThumbnail(person.user.displayAvatarURL({ dynamic: true }));
 
-				if (person.user.discriminator) { embed.addField('Discriminator', `${person.user.discriminator}`, true); }
-				if (person.user.dmChannel) { embed.addField('DM Channel', `${person.user.dmChannel}`, true); }
-				if (person.user.flags) { embed.addField('Flags', `${person.user.flags.toArray()}`, true); }
-				if (person.user.lastMessage) { embed.addField('Last Message', `${person.user.lastMessageChannelID}/${person.user.lastMessageID}`, true); }
-				if (person.user.locale) { embed.addField('Locale (ISO 639-1)', `${person.user.locale}`, true); }
-				if (typeof person.user.system == 'boolean') { embed.addField('System Account', `${person.user.system}`, true); }
-				if (person.user.tag) { embed.addField('Tag', `${person.user.tag}`, true); }
-				if (person.user.username) { embed.addField('Username', `${person.user.username}`, true); }
+				if (person.user.discriminator) {
+					embed.addField('Discriminator', `${person.user.discriminator}`, true);
+				}
+				if (person.user.dmChannel) {
+					embed.addField('DM Channel', `${person.user.dmChannel}`, true);
+				}
+				if (person.user.flags && person.user.flags.length) {
+					embed.addField('Flags', `${person.user.flags.toArray()}`, true);
+				}
+				if (person.user.lastMessage) {
+					embed.addField('Last Message', `${person.user.lastMessageChannelID}/${person.user.lastMessageID}`, true);
+				}
+				if (person.user.locale) {
+					embed.addField('Locale (ISO 639-1)', `${person.user.locale}`, true);
+				}
+				if (typeof person.user.system == 'boolean') {
+					embed.addField('System Account', `${person.user.system}`, true);
+				}
+				if (person.user.tag) {
+					embed.addField('Tag', `${person.user.tag}`, true);
+				}
+				if (person.user.username) {
+					embed.addField('Username', `${person.user.username}`, true);
+				}
 
 				if (person.member) {
 					embed
@@ -246,11 +262,21 @@ module.exports = {
 							.addField('Display Color', `${person.member.displayColor} | ${person.member.displayHexColor}`, true)
 							.addField('Permissions', `${Array.from(person.member.permissions)}`);
 
-					if (person.member.displayName) { embed.addField('Display Name', `${person.member.displayName}`, true); }
-					if (person.member.guild) { embed.addField('Guild', `${person.member.guild}`, true); }
-					if (person.member.joinedAt) { embed.addField('Joined At', `${person.member.joinedAt.toISOString()}`); }
-					if (person.member.nickname) { embed.addField('Nickname', `${person.member.nickname}`, true); }
-					if (person.member.premiumSince) { embed.addField('Premium Since', `${person.member.premiumSince.toISOString()}`); }
+					if (person.member.displayName) {
+						embed.addField('Display Name', `${person.member.displayName}`, true);
+					}
+					if (person.member.guild) {
+						embed.addField('Guild', `${person.member.guild}`, true);
+					}
+					if (person.member.joinedAt) {
+						embed.addField('Joined At', `${person.member.joinedAt.toISOString()}`);
+					}
+					if (person.member.nickname) {
+						embed.addField('Nickname', `${person.member.nickname}`, true);
+					}
+					if (person.member.premiumSince) {
+						embed.addField('Premium Since', `${person.member.premiumSince.toISOString()}`);
+					}
 				}
 
 				return message.channel.send(embed);
